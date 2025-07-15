@@ -1,7 +1,7 @@
 # MusicPlayer-FastAPI
-This is a backend heavy Music Player made with FastAPI + PostgreSQL + SQLAlchemy that allows three user groups (Superusers aka admin, Singers and Listeners) <br>
-This is a small-scale music streaming platform for artists and listeners. It’s designed to run entirely on free cost cloud services but scalable so that it can still grow if needed. The stack is selected to balance simplicity, cost efficiency, maintainability, and ease of scaling later. <br>
-The project although would have a frontend would be heavy backend, especially relying on FastAPI and its features, hopefully exploring most if not all of its beginner to intermediate features. <br>
+This is a backend heavy Music Player made with **FastAPI + PostgreSQL + SQLAlchemy** that allows three user groups (Superusers aka admin, Singers and Listeners) <br> <br>
+This small-scale music streaming platform is for artists and listeners. It’s designed to run entirely on free cost cloud services but scalable so that it can still grow if needed. The stack is selected to balance simplicity, cost efficiency, maintainability, and ease of scaling later. <br> <br>
+The project although would have a frontend would be heavy backend, especially relying on FastAPI and its features, hopefully exploring most if not all of its beginner to intermediate features. <br> <br>
 
 
 ## Contents
