@@ -117,4 +117,4 @@ Further details about the system can be found on topic specific markdown files. 
 - [Application Features]()
 - [System Architecture]()
 - [Folder Structure]()
-- []()
+- [Model Development:](backend/app/db/README.md)
