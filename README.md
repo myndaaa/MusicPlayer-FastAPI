@@ -15,9 +15,12 @@ The project although would have a frontend, would be backend heavy, especially r
 - [Database Migrations](#database-migrations)
 - [Running the Application](#running-the-application)
 - [Development Conventions of the codebase](#development-conventions-of-the-codebase)
+- [Get to know the system](#get-to-know-the-system)
 
 ## Tech Stacks used in this project
 
+- **FastAPI** : A wrapper around starlette and pydantic hence known to be quite fast than other frameworks which run on WSGI instead of ASGI. As this is a music streamer, it having low response time is a crucial part of end user satifaction, FastAPI has been chosen as the backend framework.
+- **PostgreSQL** : Psql
 
 ## Getting Started - backend
 This project is using **poetry** as package manager and SqlAlchemy for version control of its database, which is using PSQL. 
@@ -105,3 +108,13 @@ psql --version
 
 ## Development Conventions of the codebase
 
+## Get to know the system
+
+Further details about the system can be found on topic specific markdown files. Based on the requirement kindly click the links below to redirect to the correct document to get explanation of the system in detail.
+
+- [System Documentation]()
+- [About the Project]()
+- [Application Features]()
+- [System Architecture]()
+- [Folder Structure]()
+- []()
