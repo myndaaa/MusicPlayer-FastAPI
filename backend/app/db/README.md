@@ -30,7 +30,7 @@
 
 ### Bad Example
 
-```
+```bash
 # user.py
 class User(Base):
     songs = relationship("Song", back_populates="artist")
@@ -45,7 +45,7 @@ class Song(Base):
 This one has circular import and dependency on one another, a better way of doing it and avoiding circular import that i have used and implemented is:
 
 - String based Reference:
-    ```
+    ```bash
     artist = relationship("User", back_populates="songs")  # NOT relationship(User)
 
     ```
@@ -61,7 +61,7 @@ I would use one file per data model, because as its a bigger database with multi
 
 Example:
 
-```
+```bash
 # Not to be done ->
 from app.db.models.playlist import Playlist
 
@@ -73,3 +73,51 @@ def get_user_playlists(user_id: int):
     return db.query(Playlist).filter(Playlist.user_id == user_id).all()
 
 ```
+
+Conventions I used :
+
+- using __tablename__ explicitly, even though SQL Alchemy can infer it 
+- using __repr__() or __str__() for Debugging.
+
+    ```bash
+    def __repr__(self):
+    return f"<User id={self.id} username={self.username}>"
+
+    ```
+- defined __table_args__ for Constraints & Indexes
+- soft dleetion for audit log
+- audit fields (Timestamps) like `created_at` and `deleted_at`
+- using Relationships Carefully, always defining backrefs or back_populates if needed\
+- kinda avoided loading everything by default (lazy="select" is safe) and being clear when to use uselist=False for one-to-one
+- avoided Importing DB Session in Models
+- Used UUIDs if security is needed, don't want to expose (e.g. user IDs). eg:
+
+```bash
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+```
+- not storing raw strings when it should be restricted instead used Python enum.Enum:
+```bash
+class UserRole(str, enum.Enum):
+    superadmin = "superadmin"
+    singer = "singer"
+    listener = "listener"
+
+role = Column(Enum(UserRole), nullable=False)
+
+```
+- prefixing foreign keys consistently, such as instead of just user_id, using created_by_user_id, owner_user_id, etc.
+- seeding for roles, plans, doing it safely so that it inserts default values with `INSERT ... ON CONFLICT DO NOTHING`
+
+### To be Seeded
+
+| Table                                                     | Why?                                                                            |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **Genre**                                                 | Needed to classify songs. Static values that don’t change often.                |
+| **SubscriptionPlan**                                      | Plans must exist so users can subscribe.                                        |
+| **User**                                                  | For admin/superadmin login. Needed for app management and seed tracking.        |
+| **SystemConfig**                                          | App-wide feature toggles or settings. May control limits, features, or toggles. |
+| **Localization**                                          | For multi-language UI text keys required to support localization.               |
+| **PaymentMethod** _(If model not enum)_ [Future Plan]     | Needed to support different payment types                                       |

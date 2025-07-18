@@ -40,10 +40,10 @@ Next up, ensure you have the correct dependencies installed.
 2. Postgresql
 
 ### Installing Poetry
-
+*before installing please [read](#alternatively-you-can-follow-this) and go through the process once having a clear picture of how poetry functions.* </br>
 Depending on whether you are in a Mac device or Windows, run the following commands: </br>
 
-Mac
+**Mac**
 
 ```bash
 brew install poetry
@@ -56,6 +56,55 @@ Windows via curl (can also use pip)
 curl -sSL https://install.python-poetry.org | python -
 ```
 Once done. Add it to the path and then verify your installation with `poetry --version` for both mac and windows. </br>
+
+**Changing to the correct interpretor**
+
+If we have opened the folder where poetry was initiated then visual studio on its own would detect the environment created by poetry and change the interpretorss. But if we are not in the folder where poetry was initiated, for example this project. where the folder directory looks like - root folder : `music_streamer` and we have `music_streamer/backend/poetry.toml`
+
+In such case we have to manually change the interpretor so the frameworks that are installed via `Poetry` would be detected.
+
+- Get all poetry env list
+   ```bash
+   poetry env info --path
+
+   sample output: /Users/mlbd-XX/Library/Caches/pypoetry/virtualenvs/music_streamer-fastapi-abc123-py3.11
+
+   ```
+- Press `Cmd + Shift + P` (or `Ctrl + Shift + P` on Windows)
+- Search: `Python: Select Interpreter` click it and then click `Enter interpreter path`
+- now type the env path found earliar and add `/bin/python` to 
+
+#### Alternatively, you can follow this:**
+
+
+Make Poetry always create virtual envs inside project. This makes it easier to find the venv:
+This must be run before doing `poetry init`
+
+```bash
+poetry config virtualenvs.in-project true
+```
+
+Then future virtual environments will be created inside .venv in the subfolder, like `backend/.venv/bin/python` 
+Then we can set interpreter to:
+
+```bash
+backend/.venv/bin/python
+```
+
+If running this mid project then:
+
+```bash
+# enable project venv
+poetry config virtualenvs.in-project true
+
+# remove current global venv no data loss
+poetry env remove python
+
+# make a fresh `.venv/` 
+poetry install
+```
+
+
 
 ### Installing Postgresql
 
@@ -107,6 +156,8 @@ psql --version
 ## Running the Application
 
 ## Development Conventions of the codebase
+ - System uses python convention and uses snake cases (eg: `user_account_link`)
+ - currently system uses space indentation instead of tab indentation
 
 ## Get to know the system
 
