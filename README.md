@@ -151,9 +151,53 @@ psql --version
 
 ## Environment Setup
 
+Copy `.env.example` to `.env` and update values as needed:
+
+```bash
+cp .env.example .env
+```
+Then update the variables as needed so the application (alembic and fastapi) understands it
+
 ## Database Migrations
 
+Login to PostgreSQL 
+    
+```bash
+psql -U postgres
+```
+
+- Create the database and user if you haven’t already:
+    
+
+```sql
+CREATE USER mynda WITH PASSWORD 'dev';
+CREATE DATABASE music_stream OWNER mynda;
+GRANT ALL PRIVILEGES ON DATABASE music_stream TO mynda;
+```
+
+
 ## Running the Application
+
+**Initialize Alembic (already done if cloning repo)**
+**Run migrations to create tables**
+    
+From the project root (where `alembic.ini` is located):
+
+```bash
+alembic upgrade head
+```
+
+This will apply all migration scripts and create all necessary tables.
+**Verify tables are created**
+    
+
+Use psql or any PostgreSQL client to check:
+
+```bash
+psql -U mynda -d music_stream
+\dt
+```
+
 
 ## Development Conventions of the codebase
  - System uses python convention and uses snake cases (eg: `user_account_link`)
@@ -168,4 +212,4 @@ Further details about the system can be found on topic specific markdown files. 
 - [Application Features](Documents/features.md)
 - [System Architecture](Documents/FolderStructure.md)
 - [Folder Structure](Documents/FolderStructure.md)
-- [Model Development:](backend/app/db/README.md)
+- [Model Development](backend/app/db/README.md)
