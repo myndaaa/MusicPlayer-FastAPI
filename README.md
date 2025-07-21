@@ -163,9 +163,9 @@ psql --version
 
 Further details about the system can be found on topic specific markdown files. Based on the requirement kindly click the links below to redirect to the correct document to get explanation of the system in detail.
 
-- [System Documentation]()
-- [About the Project]()
-- [Application Features]()
-- [System Architecture]()
-- [Folder Structure]()
+- [System Documentation](https://docs.google.com/document/d/1OgOAGaGIimPLEj1oWWk97l_t-elVHXK3ed1jDhDiPLA/edit?usp=sharing)
+- [About the Project](Documents/about_the_project.md)
+- [Application Features](Documents/features.md)
+- [System Architecture](Documents/FolderStructure.md)
+- [Folder Structure](Documents/FolderStructure.md)
 - [Model Development:](backend/app/db/README.md)
