@@ -28,3 +28,9 @@ app.add_middleware(
 def read_root():
     return {"status": "API is live 🚀"}
 
+# Test
+
+from app.core.config import settings
+
+print(settings.DATABASE_URL)
+print(settings.JWT_SECRET_KEY)

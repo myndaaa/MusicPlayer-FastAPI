@@ -2,7 +2,7 @@
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, UniqueConstraint, Index
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.db.base_class import Base
 
 class Genre(Base):
     __tablename__ = "genre"
@@ -15,7 +15,7 @@ class Genre(Base):
     disabled_at = Column(DateTime, nullable=True)
 
 
-    # Relationship: one genre has many songs
+    # Relationship
     songs = relationship("Song", back_populates="genre", lazy="select")
 
     __table_args__ = (

@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, ForeignKey, Index, UniqueConstraint, Boolean
 from sqlalchemy.dialects.postgresql import JSONB  
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.db.base_class import Base
 
 
 class Artist(Base):
@@ -24,7 +24,13 @@ class Artist(Base):
 
    
     # Relationships
-    user = relationship("User", backref="artist_profile", lazy="select", uselist=False)
+    linked_user = relationship("User", back_populates="artist_profile", lazy="select", uselist=False)
+    songs = relationship("Song", back_populates="artist", lazy="select")
+    albums = relationship("Album", back_populates="artist", lazy="select")
+    band_memberships = relationship("ArtistBandMember", back_populates="artist", lazy="select")
+    followers = relationship("Following", back_populates="artist", lazy="select", cascade="all, delete-orphan")
+
+
 
 
     # Constraints n Indexes

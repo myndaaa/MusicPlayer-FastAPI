@@ -1,7 +1,7 @@
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.db.base_class import Base
 from datetime import datetime, timezone
 
 
@@ -11,18 +11,17 @@ class AuditLog(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # who did it
-    user_id = Column(
-        Integer,
-        ForeignKey("user.id", name="fk_audit_log_user__user"),
-        nullable=False,
-    )
-    user = relationship("User", lazy="select")
+    user_id = Column(Integer,ForeignKey("user.id", name="fk_audit_log_user__user"), nullable=False)
     action_type = Column(String(50), nullable=False)
     target_table = Column(String(50), nullable=False)
     target_id = Column(Integer, nullable=True)  
     action_details = Column(Text, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
+
+    # Relationships
+    user = relationship("User", back_populates="audit_logs", lazy="select")
+    
 
     __table_args__ = (
         Index("ix_audit_log_target_table", "target_table"),

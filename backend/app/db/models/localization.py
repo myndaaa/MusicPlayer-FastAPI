@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.db.base_class import Base
 from datetime import datetime, timezone
 
 
@@ -22,6 +22,8 @@ class Localization(Base):
         ForeignKey("user.id", name="fk_localization_updated_by_user__user"),
         nullable=False,
     )
+
+    # Relationships
     updated_by_user = relationship("User", lazy="select")
 
     __table_args__ = (

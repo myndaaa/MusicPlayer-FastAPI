@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Index, Boolean
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.db.base_class import Base
 
 
 class Song(Base):
@@ -15,17 +15,28 @@ class Song(Base):
     # Song details
     title = Column(String(150), nullable=False)
     genre_id = Column(Integer, ForeignKey("genre.id"), nullable=False)
-    band_id = Column(Integer, ForeignKey("band.band_id"), nullable=True)
+    band_id = Column(Integer, ForeignKey("band.id"), nullable=True)
     artist_id = Column(Integer, ForeignKey("artist.id"), nullable=True)
     release_date = Column(DateTime, nullable=False)
     song_duration = Column(Integer, nullable=False)  # Duration in seconds
     file_path = Column(String(255), nullable=False)
     cover_image = Column(String(255), nullable=True)
+    artist_name_text = Column(String(100), nullable=True)
+    band_name_text = Column(String(100), nullable=True)
+    uploaded_by_user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+
 
     # Relationships
-    genre = relationship("Genre", lazy="select")
-    band = relationship("Band", lazy="select")
-    artist = relationship("Artist", lazy="select")
+   
+    genre = relationship("Genre", back_populates="songs", lazy="select")
+    band = relationship("Band", back_populates="songs", lazy="select")
+    artist = relationship("Artist", back_populates="songs", lazy="select")
+    histories = relationship("History", back_populates="song", lazy="select", cascade="all, delete-orphan")
+    likes = relationship("Likes", back_populates="song", lazy="select", cascade="all, delete-orphan")
+    playlist_songs = relationship("PlaylistSongs", back_populates="song", lazy="select")
+    album_songs = relationship("AlbumSongs", back_populates="song", lazy="select", cascade="all, delete-orphan")
+    uploaded_by = relationship("User", back_populates="uploaded_songs", lazy="select")
+
 
     # Audit and Soft Delete
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)

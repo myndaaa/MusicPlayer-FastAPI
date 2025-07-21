@@ -1,14 +1,15 @@
 
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, Boolean,Index, UniqueConstraint
-from app.db.base import Base
+from app.db.base_class import Base
+from sqlalchemy.orm import relationship
 
 
 class Band(Base):
     __tablename__ = "band"
 
     # Primary Key
-    band_id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
 
     # Band Info
     name = Column(String(50), nullable=False)
@@ -18,6 +19,16 @@ class Band(Base):
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     is_disabled = Column(Boolean, default=False, nullable=False)
     disabled_at = Column(DateTime, nullable=True)
+
+
+    # Relationships
+    
+    songs = relationship("Song", back_populates="band", lazy="select")
+    albums = relationship("Album", back_populates="band", lazy="select")
+    artist_band_members = relationship("ArtistBandMembers", back_populates="band", lazy="select")
+    followers = relationship("Following", back_populates="band", lazy="select")
+    followers = relationship("Following", back_populates="band", lazy="select", cascade="all, delete-orphan")
+
 
     # constraints and indexes
     __table_args__ = (
