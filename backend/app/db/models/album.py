@@ -16,8 +16,8 @@ class Album(Base):
     # Nullable artist or band 
     album_artist_id = Column(Integer, ForeignKey("artists.id", ondelete="SET NULL"), nullable=True)
     album_band_id = Column(Integer, ForeignKey("bands.id", ondelete="SET NULL"), nullable=True)
-    artist_name_text = Column(String(100), nullable=True)
-    band_name_text = Column(String(100), nullable=True)
+    artist_name = Column(String(100), nullable=True)
+    band_name = Column(String(100), nullable=True)
 
 
     # Relationships
@@ -31,6 +31,6 @@ class Album(Base):
         Index("idx_album_band_id", "album_band_id"),
         Index("idx_album_title", "title"),
     )
-    
+
     def __repr__(self):
         return f"<Album id={self.id} title='{self.title}' artist_id={self.album_artist_id} band_id={self.album_band_id}>"
