@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 
 
 class Band(Base):
-    __tablename__ = "band"
+    __tablename__ = "bands"
 
     # Primary Key
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -25,7 +25,7 @@ class Band(Base):
     
     songs = relationship("Song", back_populates="band", lazy="select")
     albums = relationship("Album", back_populates="band", lazy="select")
-    artist_band_members = relationship("ArtistBandMembers", back_populates="band", lazy="select")
+    artist_band_members = relationship("ArtistBandMember", back_populates="band", lazy="select")
     followers = relationship("Following", back_populates="band", lazy="select")
     followers = relationship("Following", back_populates="band", lazy="select", cascade="all, delete-orphan")
 

@@ -5,12 +5,12 @@ from app.db.base_class import Base
 
 
 class Playlist(Base):
-    __tablename__ = "playlist"
+    __tablename__ = "playlists"
 
     # Primary Key
     id = Column(Integer, primary_key=True, autoincrement=True)
     # Foreign Key to User 
-    owner_id = Column(Integer,ForeignKey("user.id", name="fk_playlist_owner_id_user"), nullable=False,)
+    owner_id = Column(Integer,ForeignKey("users.id", name="fk_playlist_owner_id_users"), nullable=False,)
 
     # Playlist details
     name = Column(String(100), nullable=False)
@@ -19,7 +19,7 @@ class Playlist(Base):
 
     # Relationships
     owner = relationship("User", back_populates="playlists", lazy="select")
-    playlist_songs = relationship("PlaylistSongs", back_populates="playlist", cascade="all, delete-orphan", lazy="select")
+    playlist_songs = relationship("PlaylistSong", back_populates="playlist", cascade="all, delete-orphan", lazy="select")
     playlist_collaborators = relationship("PlaylistCollaborator", back_populates="playlist", cascade="all, delete-orphan", lazy="select")
 
     # Indexes and Constraints

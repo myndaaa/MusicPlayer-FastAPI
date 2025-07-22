@@ -12,8 +12,8 @@ class ArtistBandMember(Base):
     band_member_id = Column(Integer, primary_key=True, autoincrement=True)
 
     # Foreign Keys
-    artist_id = Column(Integer, ForeignKey("artist.id", ondelete="CASCADE"), nullable=False)
-    band_id = Column(Integer, ForeignKey("band.id", ondelete="CASCADE"), nullable=False)
+    artist_id = Column(Integer, ForeignKey("artists.id", ondelete="CASCADE"), nullable=False)
+    band_id = Column(Integer, ForeignKey("bands.id", ondelete="CASCADE"), nullable=False)
     joined_on = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     left_at = Column(DateTime, nullable=True)
     is_current_member = Column(Boolean, default=True, nullable=False)

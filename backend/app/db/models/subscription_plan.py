@@ -5,7 +5,7 @@ from app.db.base_class import Base
 
 
 class SubscriptionPlan(Base):
-    __tablename__ = "subscription_plan"
+    __tablename__ = "subscription_plans"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)

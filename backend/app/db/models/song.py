@@ -7,23 +7,23 @@ from app.db.base_class import Base
 
 
 class Song(Base):
-    __tablename__ = "song"  
+    __tablename__ = "songs"  
 
     # Primary Key
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # Song details
     title = Column(String(150), nullable=False)
-    genre_id = Column(Integer, ForeignKey("genre.id"), nullable=False)
-    band_id = Column(Integer, ForeignKey("band.id"), nullable=True)
-    artist_id = Column(Integer, ForeignKey("artist.id"), nullable=True)
+    genre_id = Column(Integer, ForeignKey("genres.id"), nullable=False)
+    band_id = Column(Integer, ForeignKey("bands.id"), nullable=True)
+    artist_id = Column(Integer, ForeignKey("artists.id"), nullable=True)
     release_date = Column(DateTime, nullable=False)
     song_duration = Column(Integer, nullable=False)  # Duration in seconds
     file_path = Column(String(255), nullable=False)
     cover_image = Column(String(255), nullable=True)
     artist_name_text = Column(String(100), nullable=True)
     band_name_text = Column(String(100), nullable=True)
-    uploaded_by_user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    uploaded_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
 
     # Relationships
@@ -32,9 +32,9 @@ class Song(Base):
     band = relationship("Band", back_populates="songs", lazy="select")
     artist = relationship("Artist", back_populates="songs", lazy="select")
     histories = relationship("History", back_populates="song", lazy="select", cascade="all, delete-orphan")
-    likes = relationship("Likes", back_populates="song", lazy="select", cascade="all, delete-orphan")
-    playlist_songs = relationship("PlaylistSongs", back_populates="song", lazy="select")
-    album_songs = relationship("AlbumSongs", back_populates="song", lazy="select", cascade="all, delete-orphan")
+    likes = relationship("Like", back_populates="song", lazy="select", cascade="all, delete-orphan")
+    playlist_songs = relationship("PlaylistSong", back_populates="song", lazy="select")
+    album_songs = relationship("AlbumSong", back_populates="song", lazy="select", cascade="all, delete-orphan")
     uploaded_by = relationship("User", back_populates="uploaded_songs", lazy="select")
 
 

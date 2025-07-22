@@ -7,7 +7,7 @@ from app.db.base_class import Base
 
 
 class Artist(Base):
-    __tablename__ = "artist"
+    __tablename__ = "artists"
 
     # Primary Key
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -18,7 +18,7 @@ class Artist(Base):
     artist_profile_image = Column(String(255), nullable=True)  # Store S3/Cloud URL
     artist_social_link = Column(JSON, nullable=True)  
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    linked_user_account = Column(Integer, ForeignKey("user.id"), nullable=False, unique=True)  # FK to User 
+    linked_user_account = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)  # FK to User 
     is_disabled = Column(Boolean, default=False, nullable=False)  
     disabled_at = Column(DateTime, nullable=True)  
 

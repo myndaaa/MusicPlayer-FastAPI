@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 
 class Localization(Base):
-    __tablename__ = "localization"
+    __tablename__ = "localizations"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
@@ -19,7 +19,7 @@ class Localization(Base):
 
     updated_by_user_id = Column(
         Integer,
-        ForeignKey("user.id", name="fk_localization_updated_by_user__user"),
+        ForeignKey("users.id", name="fk_localization_updated_by_user__user"),
         nullable=False,
     )
 

@@ -6,12 +6,12 @@ from datetime import datetime, timezone
 
 
 class AuditLog(Base):
-    __tablename__ = "audit_log"
+    __tablename__ = "audit_logs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     # who did it
-    user_id = Column(Integer,ForeignKey("user.id", name="fk_audit_log_user__user"), nullable=False)
+    user_id = Column(Integer,ForeignKey("users.id", name="fk_audit_log_user__users"), nullable=False)
     action_type = Column(String(50), nullable=False)
     target_table = Column(String(50), nullable=False)
     target_id = Column(Integer, nullable=True)  

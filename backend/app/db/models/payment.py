@@ -18,7 +18,7 @@ class PaymentMethodEnum(str, enum.Enum):
 
 
 class Payment(Base):
-    __tablename__ = "payment"
+    __tablename__ = "payments"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)

@@ -4,11 +4,11 @@ from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 class History(Base):
-    __tablename__ = "history"
+    __tablename__ = "histories"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
-    song_id = Column(Integer, ForeignKey("song.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    song_id = Column(Integer, ForeignKey("songs.id", ondelete="CASCADE"), nullable=False)
     played_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
 
     # Relationships

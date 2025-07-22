@@ -2,12 +2,12 @@ from sqlalchemy import Column, Integer, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
-class AlbumSongs(Base):
+class AlbumSong(Base):
     __tablename__ = "album_songs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    album_id = Column(Integer, ForeignKey("album.id", ondelete="CASCADE"), nullable=False)
-    song_id = Column(Integer, ForeignKey("song.id", ondelete="CASCADE"), nullable=False)
+    album_id = Column(Integer, ForeignKey("albums.id", ondelete="CASCADE"), nullable=False)
+    song_id = Column(Integer, ForeignKey("songs.id", ondelete="CASCADE"), nullable=False)
     track_number = Column(Integer, nullable=False)
 
     # Relationships

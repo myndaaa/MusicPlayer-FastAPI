@@ -1,7 +1,7 @@
 # app/db/models/user.py
 
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Integer, DateTime, Boolean, Enum, Index, UniqueConstraint 
 from app.db.base_class import Base
 from sqlalchemy.orm import relationship
@@ -15,7 +15,7 @@ class UserRole(str, enum.Enum):
 
 
 class User(Base):
-    __tablename__ = "user"  
+    __tablename__ = "users"  
 
     # Primary Key
     id = Column(Integer, primary_key=True)  
@@ -30,7 +30,7 @@ class User(Base):
 
 
     # Audit Fields
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     last_login = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=True)
     disabled_at = Column(DateTime, nullable=True)

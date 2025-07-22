@@ -4,18 +4,18 @@ from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 class Album(Base):
-    __tablename__ = "album"
+    __tablename__ = "albums"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     cover_image = Column(String(255), nullable=True)
     release_date = Column(DateTime, nullable=True)
-    uploaded_by_user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    uploaded_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     
     # Nullable artist or band 
-    album_artist_id = Column(Integer, ForeignKey("artist.id", ondelete="SET NULL"), nullable=True)
-    album_band_id = Column(Integer, ForeignKey("band.id", ondelete="SET NULL"), nullable=True)
+    album_artist_id = Column(Integer, ForeignKey("artists.id", ondelete="SET NULL"), nullable=True)
+    album_band_id = Column(Integer, ForeignKey("bands.id", ondelete="SET NULL"), nullable=True)
     artist_name_text = Column(String(100), nullable=True)
     band_name_text = Column(String(100), nullable=True)
 
@@ -23,7 +23,7 @@ class Album(Base):
     # Relationships
     artist = relationship("Artist", back_populates="albums", lazy="select")
     band = relationship("Band", back_populates="albums", lazy="select")
-    album_songs = relationship("AlbumSongs", back_populates="album", cascade="all, delete-orphan", lazy="select")
+    album_songs = relationship("AlbumSong", back_populates="albums", cascade="all, delete-orphan", lazy="select")
     uploaded_by = relationship("User", back_populates="uploaded_albums", lazy="select")
 
     def __repr__(self):

@@ -3,12 +3,12 @@ from app.db.base_class import Base
 from sqlalchemy.orm import relationship
 
 
-class PlaylistSongs(Base):
+class PlaylistSong(Base):
     __tablename__ = "playlist_songs"
 
     playlist_song_id = Column(Integer, primary_key=True, autoincrement=True)
-    playlist_id = Column(Integer, ForeignKey("playlist.id", ondelete="CASCADE"), nullable=False)
-    song_id = Column(Integer, ForeignKey("song.id", ondelete="CASCADE"), nullable=False)
+    playlist_id = Column(Integer, ForeignKey("playlists.id", ondelete="CASCADE"), nullable=False)
+    song_id = Column(Integer, ForeignKey("songs.id", ondelete="CASCADE"), nullable=False)
     song_order = Column(Integer, nullable=True)
 
     # Relationships

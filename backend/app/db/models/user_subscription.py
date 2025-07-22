@@ -5,11 +5,11 @@ from app.db.base_class import Base
 
 
 class UserSubscription(Base):
-    __tablename__ = "user_subscription"
+    __tablename__ = "user_subscriptions"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
-    plan_id = Column(Integer, ForeignKey("subscription_plan.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    plan_id = Column(Integer, ForeignKey("subscription_plans.id", ondelete="CASCADE"), nullable=False)
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
     is_auto_renew = Column(Boolean, default=True, nullable=False)

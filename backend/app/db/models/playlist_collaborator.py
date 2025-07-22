@@ -5,14 +5,14 @@ from app.db.base_class import Base
 
 
 class PlaylistCollaborator(Base):
-    __tablename__ = "playlist_collaborator"
+    __tablename__ = "playlist_collaborators"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    playlist_id = Column(Integer, ForeignKey("playlist.id", ondelete="CASCADE"), nullable=False)
-    collaborator_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    playlist_id = Column(Integer, ForeignKey("playlists.id", ondelete="CASCADE"), nullable=False)
+    collaborator_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     can_edit = Column(Boolean, default=False, nullable=False)
     added_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    added_by_user_id = Column(Integer, ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+    added_by_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
     # Relationships
     playlist = relationship("Playlist", back_populates="playlist_collaborators", lazy="select")

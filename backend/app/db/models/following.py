@@ -5,13 +5,13 @@ from app.db.base_class import Base
 
 
 class Following(Base):
-    __tablename__ = "following"
+    __tablename__ = "followings"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
-    artist_id = Column(Integer, ForeignKey("artist.id", ondelete="CASCADE"), nullable=True)
-    band_id = Column(Integer, ForeignKey("band.id", ondelete="CASCADE"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    artist_id = Column(Integer, ForeignKey("artists.id", ondelete="CASCADE"), nullable=True)
+    band_id = Column(Integer, ForeignKey("bands.id", ondelete="CASCADE"), nullable=True)
 
     started_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
 
