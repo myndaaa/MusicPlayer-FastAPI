@@ -7,12 +7,13 @@ from app.db.base_class import Base
 from sqlalchemy.orm import relationship
 
 
+''' -> commented out code to be removed later after schema creation
 # Roles using Python Enum 
 class UserRole(str, enum.Enum):
     superadmin = "admin"
     singer = "artist"
     listener = "listener"
-
+'''
 
 class User(Base):
     __tablename__ = "users"  
@@ -25,7 +26,7 @@ class User(Base):
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
     password = Column(String(255), nullable=False)
-    role = Column(Enum(UserRole), nullable=False)  # Enum for role handling
+    role = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False, index=True)
 
 

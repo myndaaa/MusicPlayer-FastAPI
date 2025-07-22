@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from app.db.base import Base
 import enum
 
-
+''' --> commented out code to be removed later after schema creation
 class PaymentStatusEnum(str, enum.Enum):
     pending = "pending"
     success = "success"
@@ -15,7 +15,7 @@ class PaymentStatusEnum(str, enum.Enum):
 class PaymentMethodEnum(str, enum.Enum):
     paypal = "paypal"   
     credit_card = "credit_card"
-
+'''
 
 class Payment(Base):
     __tablename__ = "payments"
@@ -23,8 +23,8 @@ class Payment(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     amount = Column(Numeric(10, 2), nullable=False)
-    payment_status = Column(Enum(PaymentStatusEnum), nullable=False)
-    payment_method = Column(Enum(PaymentMethodEnum), nullable=False)
+    payment_status = Column(String(100), nullable=False)
+    payment_method = Column(String(100), nullable=False)
     transaction_reference = Column(String(255), nullable=False, unique=True)
     payment_created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     payment_completed_at = Column(DateTime, nullable=True)
