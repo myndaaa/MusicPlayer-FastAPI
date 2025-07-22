@@ -45,10 +45,10 @@ class Song(Base):
 
     # Indexes
     __table_args__ = (
-        Index("ix_song_title", "title"),
-        Index("ix_song_genre_id", "genre_id"),
-        Index("ix_song_artist_id", "artist_id"),
-        Index("ix_song_band_id", "band_id"),
+        Index("idx_song_title", "title"),
+        Index("idx_song_genre_id", "genre_id"),
+        Index("idx_song_artist_id", "artist_id"),
+        Index("idx_song_band_id", "band_id"),
     )
 
     def __repr__(self):

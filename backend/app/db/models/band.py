@@ -33,7 +33,7 @@ class Band(Base):
     # constraints and indexes
     __table_args__ = (
         UniqueConstraint("name", name="uq_band_name"),
-        Index("ix_band_name", "name"),
+        Index("idx_band_name", "name"),
     )
 
     def __repr__(self):

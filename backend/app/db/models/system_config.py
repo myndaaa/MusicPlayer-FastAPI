@@ -20,7 +20,7 @@ class SystemConfig(Base):
     
     # Indexes
     __table_args__ = (
-        Index("ix_system_config_config_key", "config_key"),
+        Index("idx_system_config_config_key", "config_key"),
     )
 
     def __repr__(self):

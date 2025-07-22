@@ -20,7 +20,7 @@ class PlaylistCollaborator(Base):
     added_by = relationship("User", foreign_keys=[added_by_user_id], back_populates="added_collaborators", lazy="select")
 
     __table_args__ = (
-        Index("ix_playlist_collaborator", "playlist_id", "collaborator_id"),
+        Index("idx_playlist_collaborator", "playlist_id", "collaborator_id"),
     )
 
     def __repr__(self):

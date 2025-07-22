@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, ForeignKey, Numeric, Enum, String, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, Numeric, String, DateTime, Index
 from sqlalchemy.orm import relationship
 from app.db.base import Base
-import enum
 
 ''' --> commented out code to be removed later after schema creation
 class PaymentStatusEnum(str, enum.Enum):
@@ -31,6 +30,15 @@ class Payment(Base):
 
     # Relationships
     user = relationship("User", back_populates="payments", lazy="select")
+
+    # Indexes
+    __table_args__ = (
+        Index("idx_payments_user_id", "user_id"),
+        Index("idx_payments_status", "payment_status"),
+        Index("idx_payments_created_at", "payment_created_at"),
+        Index("idx_payments_method", "payment_method"),
+    )
+
 
     def __repr__(self):
         return f"<Payment id={self.id} user_id={self.user_id} status={self.payment_status}>"

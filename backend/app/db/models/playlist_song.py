@@ -16,7 +16,7 @@ class PlaylistSong(Base):
     song = relationship("Song", back_populates="playlist_songs", lazy="select")
 
     __table_args__ = (
-        Index("ix_playlist_song", "playlist_id", "song_id"),
+        Index("idx_playlist_song", "playlist_id", "song_id"),
     )
 
     def __repr__(self):

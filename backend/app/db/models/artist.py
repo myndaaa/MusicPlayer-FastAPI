@@ -36,7 +36,7 @@ class Artist(Base):
     # Constraints n Indexes
     __table_args__ = (
         UniqueConstraint("linked_user_account", name="uq_artist_user_account"),
-        Index("ix_artist_stage_name", "artist_stage_name"),
+        Index("idx_artist_stage_name", "artist_stage_name"),
     )
 
     # For debugging

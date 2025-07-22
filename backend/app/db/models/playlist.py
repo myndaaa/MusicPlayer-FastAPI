@@ -25,7 +25,7 @@ class Playlist(Base):
     # Indexes and Constraints
     __table_args__ = (
         UniqueConstraint("owner_id", "name", name="uq_playlist_owner_name"),  # optional uniqueness for user playlists
-        Index("ix_playlist_owner_id", "owner_id"),
+        Index("idx_playlist_owner_id", "owner_id"),
     )
 
     def __repr__(self):

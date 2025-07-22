@@ -24,8 +24,8 @@ class AuditLog(Base):
     
 
     __table_args__ = (
-        Index("ix_audit_log_target_table", "target_table"),
-        Index("ix_audit_log_action_type", "action_type"),
+        Index("idx_audit_log_target_table", "target_table"),
+        Index("idx_audit_log_action_type", "action_type"),
     )
 
     def __repr__(self):

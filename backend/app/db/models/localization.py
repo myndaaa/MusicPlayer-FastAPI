@@ -27,7 +27,7 @@ class Localization(Base):
     updated_by_user = relationship("User", lazy="select")
 
     __table_args__ = (
-        Index("ix_localization_translation_key", "translation_key"),
+        Index("idx_localization_translation_key", "translation_key"),
     )
 
     def __repr__(self):

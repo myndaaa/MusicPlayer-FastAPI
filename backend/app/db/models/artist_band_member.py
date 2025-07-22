@@ -28,7 +28,7 @@ class ArtistBandMember(Base):
     # Indexes and Constraints
     __table_args__ = (
         UniqueConstraint("artist_id", "band_id", "joined_on", name="uq_artist_band_joined"),
-        Index("ix_artist_band", "artist_id", "band_id"),
+        Index("idx_artist_band", "artist_id", "band_id"),
     )
 
     def __repr__(self):

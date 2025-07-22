@@ -20,7 +20,7 @@ class Genre(Base):
 
     __table_args__ = (
         UniqueConstraint("name", name="uq_genre_name"),
-        Index("ix_genre_name", "name"),
+        Index("idx_genre_name", "name"),
     )
 
     def __repr__(self):

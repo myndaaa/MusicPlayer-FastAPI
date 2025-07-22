@@ -16,7 +16,7 @@ class History(Base):
     song = relationship("Song", back_populates="histories", lazy="select")
 
     __table_args__ = (
-        Index("ix_history_user_song", "user_id", "song_id"),
+        Index("idx_history_user_song", "user_id", "song_id"),
     )
 
     def __repr__(self):

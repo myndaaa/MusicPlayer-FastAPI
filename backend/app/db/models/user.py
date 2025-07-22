@@ -75,8 +75,8 @@ class User(Base):
     __table_args__ = (
     UniqueConstraint("username", name="uq_user_username"),
     UniqueConstraint("email", name="uq_user_email"),  
-    Index("ix_user_username", "username"),
-    Index("ix_user_email", "email"),  
+    Index("idx_user_username", "username"),
+    Index("idx_user_email", "email"),  
 )
 
     def __repr__(self):

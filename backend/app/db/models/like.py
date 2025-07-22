@@ -17,7 +17,7 @@ class Like(Base):
 
     __table_args__ = (
         UniqueConstraint("user_id", "song_id", name="uq_user_song_like"),
-        Index("ix_likes_user_song", "user_id", "song_id"),
+        Index("idx_likes_user_song", "user_id", "song_id"),
     )
 
     def __repr__(self):
