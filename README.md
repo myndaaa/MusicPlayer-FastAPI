@@ -158,6 +158,25 @@ cp .env.example .env
 ```
 Then update the variables as needed so the application (alembic and fastapi) understands it
 
+### Installing the environment packages
+
+Install dependencies and activate Poetry shell
+
+```bash
+poetry install       # Installs project dependencies added via poetry add <dependency_name>
+```
+```bash
+poetry shell         # Activates the virtual environment
+```
+
+Inside the psql shell, we can run all commands directly, this shell is the virtual env shell for poetry, else, we can run poetry commands by setting it as the interpretor on vsCode and using commands as follows:
+
+```bash
+poetry run alembic upgrade head
+poetry run uvicorn app.main:app --reload
+poetry run pytest
+```
+
 ## Database Migrations
 
 Login to PostgreSQL 
