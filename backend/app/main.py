@@ -3,8 +3,9 @@ from fastapi import FastAPI
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from core.exceptions import PasswordVerificationError
-from core.exception_handler import password_verification_exception_handler,validation_exception_handler,http_exception_handler
+from core.exception import PasswordVerificationError, JWTExpiredError, JWTDecodeError
+from core.exception_handler import ( password_verification_exception_handler,validation_exception_handler,http_exception_handler,
+jwt_expired_exception_handler, jwt_decode_exception_handler, jwt_decode_exception_handler )
 
 app = FastAPI(
     title="Music Streaming API",
@@ -16,7 +17,8 @@ app = FastAPI(
 app.add_exception_handler(PasswordVerificationError, password_verification_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
-
+app.add_exception_handler(JWTExpiredError, jwt_expired_exception_handler)
+app.add_exception_handler(JWTDecodeError, jwt_decode_exception_handler)
 
 # Routers Imports
 '''

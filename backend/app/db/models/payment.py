@@ -34,13 +34,13 @@ class Payment(Base):
     # Indexes
     __table_args__ = (
         Index("idx_payments_user_id", "user_id"),
-        Index("idx_payments_status", "payment_status"),
-        Index("idx_payments_created_at", "payment_created_at"),
-        Index("idx_payments_method", "payment_method"),
+        Index("idx_payments_status", "status"),
+        Index("idx_payments_created_at", "created_at"),
+        Index("idx_payments_method", "method"),
     )
 
 
     def __repr__(self):
-        return f"<Payment id={self.id} user_id={self.user_id} status={self.payment_status}>"
+        return f"<Payment id={self.id} user_id={self.user_id} status={self.status}>"
     
     

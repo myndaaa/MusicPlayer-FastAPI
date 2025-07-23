@@ -2,9 +2,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from argon2 import PasswordHasher, exceptions as argon2_exceptions
 import jwt
-from jwt import PyJWTError
+from jwt import ExpiredSignatureError, InvalidTokenError
+from core.exception import JWTExpiredError, JWTDecodeError
 from core.config import settings
-from core.exceptions import PasswordVerificationError
+from core.exception import PasswordVerificationError
 
 
 # Argon2id hasher defaults
@@ -77,7 +78,7 @@ def create_refresh_token(subject: str,expires_delta: Optional[timedelta] = None)
     :return: JWT refresh token
     """
 
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(days=settings.refresh_token_expire_minutes))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.refresh_token_expire_minutes))
     payload = {
         "sub": subject,
         "exp": expire,
@@ -85,18 +86,17 @@ def create_refresh_token(subject: str,expires_delta: Optional[timedelta] = None)
         "type": "refresh"  # distinguishes from access tokens
     }
 
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
 def decode_token(token: str) -> Dict[str, Any]:
     """
     Decodes and validates a JWT token.
-    :param token: Encoded JWT token
-    :return: Decoded payload as dictionary
-    :raises: PyJWTError subclass (e.g., ExpiredSignatureError, InvalidTokenError)
+    Raises custom exceptions for expired or invalid tokens.
     """
     try:
-        return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-    except PyJWTError as e:
-        raise e
-
+        return jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+    except ExpiredSignatureError:
+        raise JWTExpiredError()
+    except InvalidTokenError:
+        raise JWTDecodeError()
