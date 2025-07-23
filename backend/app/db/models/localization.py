@@ -2,12 +2,12 @@
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
-from app.db.base import Base
+from app.db.base_class import Base
 from datetime import datetime, timezone
 
 
 class Localization(Base):
-    __tablename__ = "localization"
+    __tablename__ = "localizations"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
@@ -19,17 +19,17 @@ class Localization(Base):
 
     updated_by_user_id = Column(
         Integer,
-        ForeignKey("user.id", name="fk_localization_updated_by_user__user"),
+        ForeignKey("users.id", name="fk_localization_updated_by_user__user"),
         nullable=False,
     )
+
+    # Relationships
     updated_by_user = relationship("User", lazy="select")
 
     __table_args__ = (
-        Index("ix_localization_translation_key", "translation_key"),
+        Index("idx_localization_translation_key", "translation_key"),
     )
 
     def __repr__(self):
-        return (
-            f"<Localization id={self.id} lang={self.language_code} "
-            f"key='{self.translation_key}' updated_by={self.updated_by_user_id}>"
-        )
+        return f"<Localization id={self.id} lang={self.language_code} key='{self.translation_key}' updated_by={self.updated_by_user_id}>"
+        
