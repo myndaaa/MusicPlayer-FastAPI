@@ -21,6 +21,8 @@ cloudinary = ">=1.44.1,<2.0.0"
 dotenv = "^0.9.9"
 pydantic = "^2.11.7"
 pydantic-settings = "^2.10.1"
+argon2-cffi = "^25.1.0"
+pyjwt = "^2.10.1"
 
 
 [tool.poetry.group.dev.dependencies]
