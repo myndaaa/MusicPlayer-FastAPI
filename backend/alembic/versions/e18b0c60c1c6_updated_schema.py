@@ -1,8 +1,8 @@
-"""initial migration
+"""Updated Schema
 
-Revision ID: 3001c0ec2b93
+Revision ID: e18b0c60c1c6
 Revises: 
-Create Date: 2025-07-22 14:44:04.380744
+Create Date: 2025-07-23 16:28:40.730597
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '3001c0ec2b93'
+revision: str = 'e18b0c60c1c6'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -124,18 +124,18 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=False),
-    sa.Column('payment_status', sa.String(length=100), nullable=False),
-    sa.Column('payment_method', sa.String(length=100), nullable=False),
+    sa.Column('status', sa.String(length=100), nullable=False),
+    sa.Column('method', sa.String(length=100), nullable=False),
     sa.Column('transaction_reference', sa.String(length=255), nullable=False),
-    sa.Column('payment_created_at', sa.DateTime(), nullable=False),
-    sa.Column('payment_completed_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('completed_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('transaction_reference')
     )
-    op.create_index('idx_payments_created_at', 'payments', ['payment_created_at'], unique=False)
-    op.create_index('idx_payments_method', 'payments', ['payment_method'], unique=False)
-    op.create_index('idx_payments_status', 'payments', ['payment_status'], unique=False)
+    op.create_index('idx_payments_created_at', 'payments', ['created_at'], unique=False)
+    op.create_index('idx_payments_method', 'payments', ['method'], unique=False)
+    op.create_index('idx_payments_status', 'payments', ['status'], unique=False)
     op.create_index('idx_payments_user_id', 'payments', ['user_id'], unique=False)
     op.create_table('playlists',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -186,8 +186,8 @@ def upgrade() -> None:
     sa.Column('uploaded_by_user_id', sa.Integer(), nullable=False),
     sa.Column('album_artist_id', sa.Integer(), nullable=True),
     sa.Column('album_band_id', sa.Integer(), nullable=True),
-    sa.Column('artist_name_text', sa.String(length=100), nullable=True),
-    sa.Column('band_name_text', sa.String(length=100), nullable=True),
+    sa.Column('artist_name', sa.String(length=100), nullable=True),
+    sa.Column('band_name', sa.String(length=100), nullable=True),
     sa.ForeignKeyConstraint(['album_artist_id'], ['artists.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['album_band_id'], ['bands.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['uploaded_by_user_id'], ['users.id'], ),
@@ -235,7 +235,8 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['added_by_user_id'], ['users.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['collaborator_id'], ['users.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['playlist_id'], ['playlists.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('playlist_id', 'collaborator_id', name='uq_playlist_collaborator')
     )
     op.create_index('idx_playlist_collaborator', 'playlist_collaborators', ['playlist_id', 'collaborator_id'], unique=False)
     op.create_table('songs',
@@ -248,8 +249,8 @@ def upgrade() -> None:
     sa.Column('song_duration', sa.Integer(), nullable=False),
     sa.Column('file_path', sa.String(length=255), nullable=False),
     sa.Column('cover_image', sa.String(length=255), nullable=True),
-    sa.Column('artist_name_text', sa.String(length=100), nullable=True),
-    sa.Column('band_name_text', sa.String(length=100), nullable=True),
+    sa.Column('artist_name', sa.String(length=100), nullable=True),
+    sa.Column('band_name', sa.String(length=100), nullable=True),
     sa.Column('uploaded_by_user_id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('is_disabled', sa.Boolean(), nullable=False),
@@ -297,13 +298,13 @@ def upgrade() -> None:
     )
     op.create_index('idx_likes_user_song', 'likes', ['user_id', 'song_id'], unique=False)
     op.create_table('playlist_songs',
-    sa.Column('playlist_song_id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('playlist_id', sa.Integer(), nullable=False),
     sa.Column('song_id', sa.Integer(), nullable=False),
     sa.Column('song_order', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['playlist_id'], ['playlists.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['song_id'], ['songs.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('playlist_song_id')
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_index('idx_playlist_song', 'playlist_songs', ['playlist_id', 'song_id'], unique=False)
     # ### end Alembic commands ###
@@ -375,4 +376,3 @@ def downgrade() -> None:
     op.drop_index('idx_band_name', table_name='bands')
     op.drop_table('bands')
     # ### end Alembic commands ###
-
