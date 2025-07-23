@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, Boolean, DateTime, ForeignKey, Index
+from sqlalchemy import Column, Integer, Boolean, DateTime, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -21,7 +21,9 @@ class PlaylistCollaborator(Base):
 
     __table_args__ = (
         Index("idx_playlist_collaborator", "playlist_id", "collaborator_id"),
+        UniqueConstraint("playlist_id", "collaborator_id", name="uq_playlist_collaborator"),
     )
 
     def __repr__(self):
-        return f"<PlaylistCollaborator id={self.playlist_collaborator_id} playlist_id={self.playlist_id} collaborator_id={self.collaborator_id}>"
+        return f"<PlaylistCollaborator id={self.id} playlist_id={self.playlist_id} collaborator_id={self.collaborator_id}>"
+

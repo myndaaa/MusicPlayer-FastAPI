@@ -29,4 +29,4 @@ class Playlist(Base):
     )
 
     def __repr__(self):
-        return f"<Playlist id={self.playlist_id} name={self.name} owner_id={self.owner_id}>"
+        return f"<Playlist id={self.id} name={self.name} owner_id={self.owner_id}>"

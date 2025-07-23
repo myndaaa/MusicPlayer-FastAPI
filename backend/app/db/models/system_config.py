@@ -24,7 +24,5 @@ class SystemConfig(Base):
     )
 
     def __repr__(self):
-        return (
-            f"<SystemConfig key={self.config_key} value={self.config_value} "
-            f"updated_by={self.config_updated_by_admin_id}>"
-        )
+        return f"<SystemConfig key={self.config_key} value={self.config_value} updated_by={self.config_updated_by_admin_id}>"
+        
