@@ -31,7 +31,5 @@ class Localization(Base):
     )
 
     def __repr__(self):
-        return (
-            f"<Localization id={self.id} lang={self.language_code} "
-            f"key='{self.translation_key}' updated_by={self.updated_by_user_id}>"
-        )
+        return f"<Localization id={self.id} lang={self.language_code} key='{self.translation_key}' updated_by={self.updated_by_user_id}>"
+        

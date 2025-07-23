@@ -54,7 +54,7 @@ class User(Base):
     # Playlist Collaborations where user is collaborator
     playlist_collaborations = relationship("PlaylistCollaborator", back_populates="collaborator", lazy="select", foreign_keys="PlaylistCollaborator.collaborator_user_id")
     # Playlist Collaborations where user invited others
-    playlist_collaborator_added_by = relationship("PlaylistCollaborator", back_populates="added_by", lazy="select", foreign_keys="PlaylistCollaborator.added_by_user_id")
+    added_collaborators = relationship("PlaylistCollaborator", back_populates="added_by", lazy="select", foreign_keys="PlaylistCollaborator.added_by_user_id")
     # Following (users followed by this user)
     following = relationship("Following", back_populates="follower", lazy="select", foreign_keys="Following.following_user_id")
     # UserSubscriptions

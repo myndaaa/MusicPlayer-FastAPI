@@ -31,9 +31,7 @@ class ArtistBandMember(Base):
         Index("idx_artist_band", "artist_id", "band_id"),
     )
 
+    
     def __repr__(self):
-        return (
-            f"<ArtistBandMember id={self.band_member_id} "
-            f"artist_id={self.artist_id} band_id={self.band_id} "
-            f"current={self.is_current_member}>"
-        )
+        return f"<ArtistBandMember id={self.id} artist_id={self.artist_id} band_id={self.band_id} current={self.is_current_member}>"
+

@@ -52,7 +52,5 @@ class Song(Base):
     )
 
     def __repr__(self):
-        return (
-            f"<Song id={self.id} title='{self.title}' "
-            f"artist_id={self.artist_id} band_id={self.band_id} disabled={self.is_disabled}>"
-        )
+        return f"<Song id={self.id} title='{self.title}' artist_id={self.artist_id} band_id={self.band_id} disabled={self.is_disabled}>"
+        
