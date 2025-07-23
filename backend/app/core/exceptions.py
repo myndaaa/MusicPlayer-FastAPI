@@ -9,3 +9,9 @@ class PasswordVerificationError(HTTPException):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=detail,
         )
+        '''
+        Usage:
+        if not verify_password(...):
+            raise PasswordVerificationError(detail="password oopsie! :(" )
+        '''
+

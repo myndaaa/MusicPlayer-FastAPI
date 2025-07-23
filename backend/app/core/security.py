@@ -99,3 +99,4 @@ def decode_token(token: str) -> Dict[str, Any]:
         return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
     except PyJWTError as e:
         raise e
+
