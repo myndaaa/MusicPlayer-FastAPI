@@ -34,3 +34,4 @@ class Album(Base):
 
     def __repr__(self):
         return f"<Album id={self.id} title='{self.title}' artist_id={self.album_artist_id} band_id={self.album_band_id}>"
+

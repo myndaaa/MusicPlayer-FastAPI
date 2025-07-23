@@ -21,3 +21,4 @@ class History(Base):
 
     def __repr__(self):
         return f"<History id={self.id} user_id={self.user_id} song_id={self.song_id} played_at={self.played_at}>"
+

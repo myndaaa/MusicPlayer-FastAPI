@@ -22,11 +22,11 @@ class Payment(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     amount = Column(Numeric(10, 2), nullable=False)
-    payment_status = Column(String(100), nullable=False)
-    payment_method = Column(String(100), nullable=False)
+    status = Column(String(100), nullable=False)
+    method = Column(String(100), nullable=False)
     transaction_reference = Column(String(255), nullable=False, unique=True)
-    payment_created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
-    payment_completed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    completed_at = Column(DateTime, nullable=True)
 
     # Relationships
     user = relationship("User", back_populates="payments", lazy="select")
@@ -42,4 +42,5 @@ class Payment(Base):
 
     def __repr__(self):
         return f"<Payment id={self.id} user_id={self.user_id} status={self.payment_status}>"
+    
     

@@ -38,3 +38,4 @@ class Band(Base):
 
     def __repr__(self):
         return f"<Band id={self.id} name={self.name} disabled={self.is_disabled}>"
+

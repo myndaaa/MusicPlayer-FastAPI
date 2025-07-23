@@ -29,3 +29,4 @@ class SubscriptionPlan(Base):
 
     def __repr__(self):
         return f"<SubscriptionPlan id={self.id} name={self.name} active={self.is_active}>"
+
