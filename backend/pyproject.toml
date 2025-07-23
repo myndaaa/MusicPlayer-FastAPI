@@ -23,8 +23,6 @@ pydantic = "^2.11.7"
 pydantic-settings = "^2.10.1"
 
 
-[tool.poetry.group.dev.dependencies]
-alembic = "^1.16.4"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
