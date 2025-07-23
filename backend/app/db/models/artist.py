@@ -42,3 +42,4 @@ class Artist(Base):
     # For debugging
     def __repr__(self):
         return f"<Artist id={self.id} stage_name={self.artist_stage_name}>"
+

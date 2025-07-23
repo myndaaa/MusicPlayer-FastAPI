@@ -33,3 +33,4 @@ class AuditLog(Base):
             f"<AuditLog id={self.id} user_id={self.user_id} action={self.action_type} "
             f"target={self.target_table}:{self.target_id}>"
         )
+

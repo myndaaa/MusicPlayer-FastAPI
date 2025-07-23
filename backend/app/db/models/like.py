@@ -22,3 +22,4 @@ class Like(Base):
 
     def __repr__(self):
         return f"<Like id={self.id} user_id={self.user_id} song_id={self.song_id} liked_at={self.liked_at}>"
+

@@ -25,3 +25,4 @@ class Genre(Base):
 
     def __repr__(self):
         return f"<Genre id={self.id} name='{self.name}'>"
+

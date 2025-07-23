@@ -27,3 +27,4 @@ class AlbumSong(Base):
 
     def __repr__(self):
         return f"<AlbumSongs id={self.id} album_id={self.album_id} song_id={self.song_id} track={self.track_number}>"
+

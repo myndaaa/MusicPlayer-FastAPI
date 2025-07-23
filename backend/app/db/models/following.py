@@ -31,3 +31,4 @@ class Following(Base):
 
     def __repr__(self):
         return f"<Following id={self.id} user_id={self.user_id} artist_id={self.artist_id} band_id={self.band_id} started_at={self.started_at}>"
+

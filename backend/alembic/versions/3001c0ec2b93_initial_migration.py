@@ -375,3 +375,4 @@ def downgrade() -> None:
     op.drop_index('idx_band_name', table_name='bands')
     op.drop_table('bands')
     # ### end Alembic commands ###
+
