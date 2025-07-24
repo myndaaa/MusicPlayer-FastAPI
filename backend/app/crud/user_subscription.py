@@ -9,9 +9,14 @@
 # READ
 # [ ] get_active_subscription(user_id: int, now: datetime = utcnow()) -> Optional[UserSubscription]
 #     - where: start_date <= now <= end_date and is_cancelled = False
-
 # [ ] get_all_subscriptions(user_id: int) -> List[UserSubscription]
 #     - Return history (past, present, future)
+# [ ] get_all_active_subscriptions (current date within start & end)
+# [ ] get_all_users_with_active_subscriptions
+# [ ] get_users_by_subscription_plan_ID
+# [ ] get_active_subscriptions_by_plan_ID
+# [ ] get_active_user_count_per_plan
+
 
 # UPDATE
 # [ ] cancel_subscription(user_id: int, subscription_id: int) -> UserSubscription
