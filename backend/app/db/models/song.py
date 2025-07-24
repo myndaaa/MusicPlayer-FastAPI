@@ -21,9 +21,9 @@ class Song(Base):
     song_duration = Column(Integer, nullable=False)  # Duration in seconds
     file_path = Column(String(255), nullable=False)
     cover_image = Column(String(255), nullable=True)
-    artist_name = Column(String(100), nullable=True)
-    band_name = Column(String(100), nullable=True)
-    uploaded_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    artist_name = Column(String(100), nullable=True) # input by admin when uploaded_by_user_id not null
+    band_name = Column(String(100), nullable=True) # input by admin when uploaded_by_user_id not null
+    uploaded_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=False) # admins user ID, uploaded by admin if artist/band not alive.
 
 
     # Relationships

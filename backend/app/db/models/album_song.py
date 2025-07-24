@@ -15,9 +15,7 @@ class AlbumSong(Base):
     album = relationship("Album", back_populates="album_songs", lazy="select")
     song = relationship("Song", back_populates="album_songs", lazy="select")
 
-    __table_args__ = (
-        UniqueConstraint("album_id", "track_number", name="uq_album_track"),
-    )
+    # Constraints
     __table_args__ = (
         UniqueConstraint("album_id", "track_number", name="uq_album_track"),
         Index("idx_album_song_album_id", "album_id"),
