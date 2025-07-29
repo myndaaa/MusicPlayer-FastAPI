@@ -12,7 +12,7 @@ class LocalizationBase(BaseModel):
 
 
 class LocalizationCreate(LocalizationBase):
-    pass  # Same fields, updated_by_user_id set in CRUD
+    pass  # TODO: updated_by_user_id set in CRUD
 
 
 class LocalizationUpdate(BaseModel):
@@ -22,10 +22,10 @@ class LocalizationUpdate(BaseModel):
 class LocalizationOut(LocalizationBase):
     id: int
     updated_at: datetime
-    updated_by_user_id: int # ID of the user who last updated this localization
+    updated_by_user_id: int 
 
     class Config:
-        orm_mode = True
+        from_attributes = True  
 
 
 
@@ -35,8 +35,11 @@ class UserBasicInfo(BaseModel):
     full_name: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class LocalizationWithUser(LocalizationOut):
     updated_by_user: Optional[UserBasicInfo] = None
+
+    class Config:
+        from_attributes = True
