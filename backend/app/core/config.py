@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import PostgresDsn, validator
+from pydantic import PostgresDsn
 from typing import Optional
 
 

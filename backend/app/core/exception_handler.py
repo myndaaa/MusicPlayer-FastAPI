@@ -2,8 +2,8 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from core.exception import PasswordVerificationError
-from core.exception import JWTExpiredError, JWTDecodeError
+from core.custom_exception import PasswordVerificationError
+from core.custom_exception import JWTExpiredError, JWTDecodeError
 
 
 async def password_verification_exception_handler(request: Request, exc: PasswordVerificationError):
