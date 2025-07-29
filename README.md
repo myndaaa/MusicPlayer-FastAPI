@@ -1,4 +1,30 @@
-# Music Streamer
+<h1 align="center">🎵 Music Streamer 🎵</h1>
+
+<p align="center">
+  <b>Version 1.0 • A backend-heavy, full-stack music streaming application</b><br>
+  <i>Built with FastAPI, Flutter, PostgreSQL etc. </i>
+</p>
+
+<p align="center">
+  <a href="https://github.com/myndaaa/MusicPlayer-FastAPI"><img src="https://img.shields.io/badge/version-1.0-blue.svg" alt="Version"></a>
+  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-0.104.1-green.svg?logo=fastapi" alt="FastAPI"></a>
+  <a href="https://flutter.dev/"><img src="https://img.shields.io/badge/Flutter-3.22-blue.svg?logo=flutter" alt="Flutter"></a>
+  <a href="https://pydantic.dev/"><img src="https://img.shields.io/badge/Pydantic-v2.6.4-yellow.svg?logo=pydantic" alt="Pydantic"></a>
+  <a href="https://docs.sqlalchemy.org/"><img src="https://img.shields.io/badge/SQLAlchemy-2.0-red.svg?logo=sqlalchemy" alt="SQLAlchemy"></a>
+  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-15-blue.svg?logo=postgresql" alt="PostgreSQL"></a>
+  <a href="https://docs.pytest.org/"><img src="https://img.shields.io/badge/pytest-tested-brightgreen.svg?logo=pytest" alt="pytest"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/myndaaa/MusicPlayer-FastAPI"><img alt="GitHub Repo Stars" src="https://img.shields.io/github/stars/myndaaa/MusicPlayer-FastAPI?style=social"></a>
+</p>
+
+<p align="center">
+  <a href="mailto:mysha.shemontee@monstar-lab.com">
+    <img alt="Developer" src="https://img.shields.io/badge/email-mysha.shemontee%40monstar--lab.com-red?logo=gmail&logoColor=white&label=Contact&color=red">
+  </a>
+</p>
+
 This is a backend heavy Music Streamer made with **FastAPI + PostgreSQL + SQLAlchemy** that allows three user groups (Superusers aka admin, Singers and Listeners) <br> <br>
 This small-scale music streaming platform is for artists and listeners. It’s designed to run entirely on free cost cloud services but scalable so that it can still grow if needed. The stack is selected to balance simplicity, cost efficiency, maintainability, and ease of scaling later. <br> <br>
 The project although would have a frontend, would be backend heavy, especially relying on FastAPI and its features, hopefully exploring most if not all of its beginner to intermediate features. <br> <br>
@@ -6,22 +32,31 @@ The project although would have a frontend, would be backend heavy, especially r
 
 ## Contents
 - [Tech Stacks used in this project](#tech-stacks-used-in-this-project)
-- [Getting Started - Backend](#getting-started---backend)
-  - [Installing Poetry](#installing-poetry)
-  - [Installing PostgreSQL](#installing-postgresql)
-    - [macOS](#macos)
-    - [Windows](#windows)
-- [Environment Setup](#environment-setup)
-- [Database Migrations](#database-migrations)
-- [Running the Application](#running-the-application)
-- [Development Conventions of the codebase](#development-conventions-of-the-codebase)
+-  [Run Manually (Local Dev)](#run-manually-local-dev)
+	- [Getting Started - Backend](#getting-started---backend)
+	  - [Installing Poetry](#installing-poetry)
+	  - [Installing PostgreSQL](#installing-postgresql)
+	    - [macOS](#macos)
+	    - [Windows](#windows)
+	- [Environment Setup](#environment-setup)
+	- [Database Migrations](#database-migrations)
+	- [Running the Application](#running-the-application)
+- [Run with Docker](#run-with-docker)
 - [Get to know the system](#get-to-know-the-system)
 
-## Tech Stacks used in this project
+# Tech Stacks used in this project
 
-- **FastAPI** : A wrapper around starlette and pydantic hence known to be quite fast than other frameworks which run on WSGI instead of ASGI. As this is a music streamer, it having low response time is a crucial part of end user satifaction, FastAPI has been chosen as the backend framework.
-- **PostgreSQL** : Psql
+| 🏗️ **[FastAPI](https://fastapi.tiangolo.com/)**  | Async Python web framework. High-performance & ASGI-based.                  |
+| ------------------------------------------------- | --------------------------------------------------------------------------- |
+| 🛡️ **[Pydantic](https://docs.pydantic.dev/)**    | Data validation using Python type hints. Validates request/response models. |
+| 🧱 **[SQLAlchemy](https://docs.sqlalchemy.org/)** | ORM and SQL toolkit for handling database models and queries.               |
+| 🐘 **[PostgreSQL](https://www.postgresql.org/)**  | Relational database for storing application data.                           |
+| 🧬 **[Alembic](https://alembic.sqlalchemy.org/)** | Database migration tool used alongside SQLAlchemy.                          |
+| 🧪 **[Pytest](https://docs.pytest.org/)**         | Testing framework for writing backend tests.                                |
+| 📦 **[Poetry](https://python-poetry.org/)**       | Dependency & virtualenv manager for Python.                                 |
+| 📱 **[Flutter](https://flutter.dev/)**            | Natively compiled mobile/web UI from a single codebase                      |
 
+# 🧪✨ Run Manually (Local Dev)
 ## Getting Started - backend
 This project is using **poetry** as package manager and SqlAlchemy for version control of its database, which is using PSQL. 
 </br>
@@ -57,11 +92,11 @@ curl -sSL https://install.python-poetry.org | python -
 ```
 Once done. Add it to the path and then verify your installation with `poetry --version` for both mac and windows. </br>
 
-**Changing to the correct interpretor**
+**Changing to the correct interpreter**
 
-If we have opened the folder where poetry was initiated then visual studio on its own would detect the environment created by poetry and change the interpretorss. But if we are not in the folder where poetry was initiated, for example this project. where the folder directory looks like - root folder : `music_streamer` and we have `music_streamer/backend/poetry.toml`
+If we have opened the folder where poetry was initiated then visual studio on its own would detect the environment created by poetry and change the interpreters. But if we are not in the folder where poetry was initiated, for example this project. where the folder directory looks like - root folder : `music_streamer` and we have `music_streamer/backend/poetry.toml`
 
-In such case we have to manually change the interpretor so the frameworks that are installed via `Poetry` would be detected.
+In such case we have to manually change the interpreter so the frameworks that are installed via `Poetry` would be detected.
 
 - Get all poetry env list
    ```bash
@@ -74,7 +109,7 @@ In such case we have to manually change the interpretor so the frameworks that a
 - Search: `Python: Select Interpreter` click it and then click `Enter interpreter path`
 - now type the env path found earliar and add `/bin/python` to 
 
-#### Alternatively, you can follow this:**
+#### Alternatively, you can follow this:
 
 
 Make Poetry always create virtual envs inside project. This makes it easier to find the venv:
@@ -217,12 +252,36 @@ psql -U mynda -d music_stream
 \dt
 ```
 
+# 🐳⚡ Run with Docker
 
-## Development Conventions of the codebase
- - System uses python convention and uses snake cases (eg: `user_account_link`)
- - currently system uses space indentation instead of tab indentation
+## **Make sure you have Docker installed**
 
-## Get to know the system
+Install [Docker](https://docs.docker.com/get-docker/) for your OS. Verify with the following commands
+```bash
+docker --version 
+docker-compose --version
+```
+## **Start the docker daemon**
+Simply launching the Docker Desktop application will automatically start the Docker daemon.
+
+## Build and run the container
+Look at the root folder and make sure it contains the following file `docker-compose.yml`
+Then change directory to said root folder and run the following command:
+```bash
+docker-compose up --build
+```
+Alternatively check the health of the containers via
+```bash
+docker compose ps
+```
+Sample output:
+```bash
+NAME                COMMAND                  STATE                HEALTH             PORTS
+music-db-1          "docker-entrypoint.s…"   Up 30 seconds        healthy            5432/tcp
+music-web-1         "uvicorn app.main:ap…"   Up 10 seconds        starting           0.0.0.0:8000->800
+
+```
+# Get to know the system
 
 Further details about the system can be found on topic specific markdown files. Based on the requirement kindly click the links below to redirect to the correct document to get explanation of the system in detail.
 
