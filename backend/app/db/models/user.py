@@ -1,6 +1,5 @@
 # app/db/models/user.py
 
-import enum
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Integer, DateTime, Boolean, Enum, Index, UniqueConstraint 
 from app.db.base_class import Base

@@ -49,44 +49,55 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         # unknown hashing errors, re-raise
         raise e
 
-
-def create_access_token(subject: str, expires_delta: Optional[timedelta] = None,additional_claims: Optional[Dict[str, Any]] = None) -> str:
+def create_access_token(subject: str, username: str, email: str, role: str, expires_delta: Optional[timedelta] = None, additional_claims: Optional[Dict[str, Any]] = None) -> str:
     """
-    Creates a JWT access token with expiry
-    :param subject: Identifier to encode
-    :param expires_delta: Token lifespan
-    :param additional_claims: Extra data to include in payload 
-    :return: JWT token string
-    """
+    Creates a JWT access token.
+    Parameters:
+    - subject: Unique identifier for token owner user_id
+    - username: User's username
+    - email: User's email
+    - role: Role of the user (eg. admin, artist, listener)
+    - expires_delta: Custom expiration duration (default: from settings)
+    - additional_claims: Optional dict for extra fields
 
+    Returns:
+    - Signed JWT token string
+    """
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
     payload = {
-        "sub": subject,
-        "exp": expire,
-        "iat": datetime.now(timezone.utc),
-        **(additional_claims or {})
+        "sub": subject, # token subject, user_id
+        "exp": expire, # token expiry
+        "iat": datetime.now(timezone.utc), # issued at timestamp
+        "type": "access", # distinguish between access and refresh
+        "username": username,
+        "email": email,
+        "role": role.lower(), # admin, artist, listener
+        **(additional_claims or {}) # for future use 
     }
-    # Encode JWT using your secret key
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
-def create_refresh_token(subject: str,expires_delta: Optional[timedelta] = None) -> str:
+def create_refresh_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
     """
     Creates a JWT refresh token.
-    :param subject: Identifier to encode
-    :param expires_delta: Custom expiration time
-    :return: JWT refresh token
-    """
 
+    Parameters:
+    - subject: Same as user ID
+    - user_id: User's DB ID (can be used to revoke token via DB blacklist later)
+    - expires_delta: custom expiry
+
+    Returns:
+    - Signed JWT refresh token string
+    """
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.refresh_token_expire_minutes))
     payload = {
         "sub": subject,
         "exp": expire,
         "iat": datetime.now(timezone.utc),
-        "type": "refresh"  # distinguishes from access tokens
+        "type": "refresh", # marks this token as a refresh token
     }
-
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+
 
 
 def decode_token(token: str) -> Dict[str, Any]:
