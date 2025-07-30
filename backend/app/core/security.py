@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from argon2 import PasswordHasher, exceptions as argon2_exceptions
-import jwt
+from jwt import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError
 from app.core.custom_exception import JWTExpiredError, JWTDecodeError
 from app.core.config import settings
