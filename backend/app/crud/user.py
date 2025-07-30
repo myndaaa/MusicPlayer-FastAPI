@@ -125,7 +125,6 @@ def change_password(db: Session, user_id: int, password_data: UserPasswordUpdate
     # hash and update new password (schema already validated the new password)
     hashed_new_password = hash_password(password_data.new_password)
     user.password = hashed_new_password
-    
     db.commit()
     return True
 
@@ -239,7 +238,6 @@ def search_users_by_name(db: Session, name: str) -> List[User]:
     Args:
         db: Database session
         name: Name to search for (can be partial)
-        
     Returns:
         List[User]: List of users matching the name search
     """
@@ -252,7 +250,7 @@ def search_users_by_name(db: Session, name: str) -> List[User]:
     ).all()
 
 
-def get_users_by_role(db: Session, role: UserRole) -> List[User]:
+def get_users_by_role(db: Session, role: UserRole, skip: int = 0, limit: int = 100) -> List[User]:
     """
     Retrieves all users with a specific role.
     Useful for role-based operations like finding all admins
@@ -260,34 +258,40 @@ def get_users_by_role(db: Session, role: UserRole) -> List[User]:
     Args:
         db: Database session
         role: The role to filter by (admin, user, musician)
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
     Returns:
         List[User]: List of users with the specified role
     """
-    return db.query(User).filter(User.role == role.value).all()
+    return db.query(User).filter(User.role == role.value).offset(skip).limit(limit).all()
 
 
-def get_active_users(db: Session) -> List[User]:
+def get_active_users(db: Session, skip: int = 0, limit: int = 100) -> List[User]:
     """
     Retrieves all active users in the system.
     This function returns only users who can currently
     log in and use the application.
     Args:
         db: Database session
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
     Returns:
         List[User]: List of active users
     """
-    return db.query(User).filter(User.is_active == True).all()
+    return db.query(User).filter(User.is_active == True).offset(skip).limit(limit).all()
 
 
-def get_inactive_users(db: Session) -> List[User]:
+def get_inactive_users(db: Session, skip: int = 0, limit: int = 100) -> List[User]:
     """
     Retrieves all inactive users in the system.
     Args:
         db: Database session
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
     Returns:
         List[User]: List of inactive users
     """
-    return db.query(User).filter(User.is_active == False).all()
+    return db.query(User).filter(User.is_active == False).offset(skip).limit(limit).all()
 
 
 def get_user_with_relationships(db: Session, user_id: int) -> Optional[User]:
@@ -306,28 +310,32 @@ def get_user_with_relationships(db: Session, user_id: int) -> Optional[User]:
     return db.query(User).filter(User.id == user_id).first()
 
 
-def get_user_playlists(db: Session, user_id: int) -> List:
+def get_user_playlists(db: Session, user_id: int, skip: int = 0, limit: int = 20) -> List:
     """
     Retrieves all playlists owned by a user.
     
     Args:
         db: Database session
         user_id: ID of the user
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
     Returns:
         List: List of playlists owned by the user
     """
     user = get_user_by_id(db, user_id)
     if not user:
         return []
-    return user.playlists
+    return user.playlists[skip:skip + limit]
 
 
-def get_user_likes(db: Session, user_id: int) -> List:
+def get_user_likes(db: Session, user_id: int, skip: int = 0, limit: int = 50) -> List:
     """
     Retrieves all songs liked by a user.
     Args:
         db: Database session
         user_id: ID of the user
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
         
     Returns:
         List: List of songs liked by the user
@@ -335,30 +343,34 @@ def get_user_likes(db: Session, user_id: int) -> List:
     user = get_user_by_id(db, user_id)
     if not user:
         return []
-    return user.likes
+    return user.likes[skip:skip + limit]
 
 
-def get_user_history(db: Session, user_id: int) -> List:
+def get_user_history(db: Session, user_id: int, skip: int = 0, limit: int = 100) -> List:
     """
     Retrieves the listening history of a user.
     Args:
         db: Database session
         user_id: ID of the user
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
     Returns:
         List: List of history entries for the user
     """
     user = get_user_by_id(db, user_id)
     if not user:
         return []
-    return user.history
+    return user.history[skip:skip + limit]
 
 
-def get_user_subscriptions(db: Session, user_id: int) -> List:
+def get_user_subscriptions(db: Session, user_id: int, skip: int = 0, limit: int = 50) -> List:
     """
     Retrieves all subscription records for a user.
     Args:
         db: Database session
         user_id: ID of the user
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
         
     Returns:
         List: List of subscription records for the user
@@ -366,15 +378,17 @@ def get_user_subscriptions(db: Session, user_id: int) -> List:
     user = get_user_by_id(db, user_id)
     if not user:
         return []
-    return user.subscriptions
+    return user.subscriptions[skip:skip + limit]
 
 
-def get_user_payments(db: Session, user_id: int) -> List:
+def get_user_payments(db: Session, user_id: int, skip: int = 0, limit: int = 50) -> List:
     """
     Retrieves all payment records for a user.
     Args:
         db: Database session
         user_id: ID of the user
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
         
     Returns:
         List: List of payment records for the user
@@ -382,11 +396,11 @@ def get_user_payments(db: Session, user_id: int) -> List:
     user = get_user_by_id(db, user_id)
     if not user:
         return []
-    return user.payments
+    return user.payments[skip:skip + limit]
 
 
 
-def get_user_audit_logs(db: Session, user_id: int) -> List:
+def get_user_audit_logs(db: Session, user_id: int, skip: int = 0, limit: int = 100) -> List:
     """
     Retrieves audit logs for a specific user.
     Returns all audit log entries related to
@@ -394,6 +408,8 @@ def get_user_audit_logs(db: Session, user_id: int) -> List:
     Args:
         db: Database session
         user_id: ID of the user
+        skip: Number of records to skip (for pagination)
+        limit: Maximum number of records to return
         
     Returns:
         List: List of audit log entries for the user
@@ -401,7 +417,7 @@ def get_user_audit_logs(db: Session, user_id: int) -> List:
     user = get_user_by_id(db, user_id)
     if not user:
         return []
-    return user.audit_logs
+    return user.audit_logs[skip:skip + limit]
 
 
 def bulk_update_user_status(db: Session, user_ids: List[int], is_active: bool) -> int:
