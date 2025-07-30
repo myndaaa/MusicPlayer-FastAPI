@@ -3,8 +3,8 @@ from fastapi import FastAPI
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from core.exception import PasswordVerificationError, JWTExpiredError, JWTDecodeError
-from core.exception_handler import ( password_verification_exception_handler,validation_exception_handler,http_exception_handler,
+from app.core.custom_exception import PasswordVerificationError, JWTExpiredError, JWTDecodeError
+from app.core.exception_handler import ( password_verification_exception_handler,validation_exception_handler,http_exception_handler,
 jwt_expired_exception_handler, jwt_decode_exception_handler, jwt_decode_exception_handler )
 
 app = FastAPI(
