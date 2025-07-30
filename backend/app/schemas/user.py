@@ -57,9 +57,10 @@ class UserUpdate(BaseModel):
 
 
 class UserPasswordUpdate(BaseModel):
-    password: PasswordStr
+    old_password: str
+    new_password: PasswordStr
 
-    @field_validator("password")
+    @field_validator("new_password")
     @classmethod
     def password_strength(cls, value: str) -> str:
         if not re.search(r"[A-Z]", value):

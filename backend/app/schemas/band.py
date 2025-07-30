@@ -150,14 +150,15 @@ class BandSearch(BaseModel):
 
 
 # Band following schema
-class BandFollow(BaseModel):
+class BandActionBase(BaseModel):
     band_id: int
     user_id: int
 
+class BandFollow(BandActionBase):
+    pass
 
-class BandUnfollow(BaseModel):
-    band_id: int
-    user_id: int
+class BandUnfollow(BandActionBase):
+    pass
 
 
 # Band social links schema

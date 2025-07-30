@@ -25,7 +25,7 @@ class UserSubscriptionBase(BaseModel):
 
 
 class UserSubscriptionCreate(UserSubscriptionBase):
-    pass
+    pass # TODO: at crud, check if plan is active
 
 
 class UserSubscriptionUpdate(BaseModel):
