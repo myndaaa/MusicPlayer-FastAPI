@@ -455,43 +455,6 @@ def get_active_user_count(db: Session) -> int:
     return db.query(User).filter(User.is_active == True).count()
 
 
-def is_username_available(db: Session, username: str, exclude_user_id: Optional[int] = None) -> bool:
-    """
-    This function ensures username uniqueness while allowing
-    users to keep their current username during updates.
-    Args:
-        db: Database session
-        username: Username to check
-        exclude_user_id: User ID to exclude from check (for updates)  
-    Returns:
-        bool: True if username is available, False if taken
-    """
-    query = db.query(User).filter(User.username == username)
-    
-    if exclude_user_id:
-        query = query.filter(User.id != exclude_user_id)
-    
-    return query.first() is None
-
-
-def is_email_available(db: Session, email: str, exclude_user_id: Optional[int] = None) -> bool:
-    """
-    Checks if an email address is available for update.
-    Args:
-        db: Database session
-        email: Email address to check
-        exclude_user_id: User ID to exclude from check (for updates)
-        
-    Returns:
-        bool: True if email is available, False if taken
-    """
-    query = db.query(User).filter(User.email == email)
-    
-    if exclude_user_id:
-        query = query.filter(User.id != exclude_user_id)
-    
-    return query.first() is None
-
 
 def validate_user_role(db: Session, user_id: int, required_role: UserRole) -> bool:
     """
