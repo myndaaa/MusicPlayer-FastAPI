@@ -71,12 +71,19 @@ async def signup_listener(user_data: UserSignupBase, db: Session = Depends(get_d
 
 
 @router.post("/signup/musician", response_model=UserOut)
-async def signup_musician(user_data: UserCreate,db: Session = Depends(get_db)):
+async def signup_musician(user_data: UserSignupBase, db: Session = Depends(get_db)):
     """
     Sign up a new musician user.
     """
-    # Ensure role is set to musician
-    user_data.role = UserRole.musician
+    # Create UserCreate object with role set to musician
+    user_create_data = UserCreate(
+        username=user_data.username,
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        email=user_data.email,
+        password=user_data.password,
+        role=UserRole.musician
+    )
     
     # Check if username already exists
     if get_user_by_username(db, user_data.username):
@@ -93,7 +100,7 @@ async def signup_musician(user_data: UserCreate,db: Session = Depends(get_db)):
         )
     
     try:
-        user = create_user(db, user_data)
+        user = create_user(db, user_create_data)
         return user
     except Exception as e:
         raise HTTPException(
