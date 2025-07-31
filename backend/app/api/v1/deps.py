@@ -162,7 +162,7 @@ def require_user_role(required_role: UserRole):
 # Convenience dependencies for common roles
 get_current_admin = require_user_role(UserRole.admin)
 get_current_musician = require_user_role(UserRole.musician)
-get_current_user_role = require_user_role(UserRole.user)
+get_current_user_role = require_user_role(UserRole.listener)
 
 
 def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
