@@ -8,7 +8,7 @@ from app.schemas.token import TokenResponse, TokenRefresh
 from app.services.auth import AuthService
 from app.api.v1.deps import get_current_active_user, get_auth_service
 
-router = APIRouter(prefix="/auth", tags=["authentication"])
+router = APIRouter()
 
 
 @router.post("/login", response_model=TokenResponse)
