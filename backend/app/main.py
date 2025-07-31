@@ -21,14 +21,12 @@ app.add_exception_handler(JWTExpiredError, jwt_expired_exception_handler)
 app.add_exception_handler(JWTDecodeError, jwt_decode_exception_handler)
 
 # Routers Imports
-'''
-from app.api.v1 import user_router, song_router, etc...
-'''
+from app.api.v1.auth import router as auth_router
+
 # Router inclusion and prefix declaration
-'''
-app.include_router(user.router, prefix="/api/v1/users")
-app.include_router(song.router, prefix="/api/v1/songs")
-'''
+app.include_router(auth_router, prefix="/api/v1")
+
+
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
