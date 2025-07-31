@@ -489,6 +489,7 @@ def update_last_login(db: Session, user_id: int) -> bool:
     return True
 
 
+
 def validate_user_role(db: Session, user_id: int, required_role: UserRole) -> bool:
     """
     Validates if a user has the required role.

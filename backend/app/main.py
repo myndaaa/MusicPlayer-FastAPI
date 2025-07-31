@@ -22,9 +22,11 @@ app.add_exception_handler(JWTDecodeError, jwt_decode_exception_handler)
 
 # Routers Imports
 from app.api.v1.auth import router as auth_router
+from app.api.v1.user import router as user_router
 
 # Router inclusion and prefix declaration
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(user_router, prefix="/api/v1")
 
 
 # CORS configuration

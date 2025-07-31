@@ -111,6 +111,24 @@ def get_current_musician_user(current_user: Annotated[User, Depends(get_current_
     return current_user
 
 
+def get_current_listener_user(current_user: Annotated[User, Depends(get_current_active_user)]) -> User:
+    """
+    Validates that the current user has listener role.
+    Args:
+        current_user: Current active user 
+    Returns:
+        User: Listener user
+    Raises:
+        HTTPException: If user is not a listener
+    """
+    if current_user.role != UserRole.listener.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Listener access required"
+        )
+    return current_user
+
+
 def get_current_user_or_optional(credentials: Optional[Annotated[HTTPAuthorizationCredentials, Depends(security)]] = None,db: Session = Depends(get_db)) -> Optional[User]:
     """
     Extracts current user if token is provided, otherwise returns None.
