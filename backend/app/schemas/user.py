@@ -8,7 +8,7 @@ import enum
 
 class UserRole(str, enum.Enum):
     admin = "admin"
-    user = "user"
+    listener = "listener"
     musician = "musician"
 
 # String Constraints for User Input
