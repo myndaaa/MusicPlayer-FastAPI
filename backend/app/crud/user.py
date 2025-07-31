@@ -33,7 +33,7 @@ def create_user(db: Session, user_data: UserCreate) -> User:
         last_name=user_data.last_name,
         email=user_data.email,
         password=hashed_password,
-        role=user_data.role.value,  # convert enum to string
+        role=user_data.role,  # role is already a string due to use_enum_values=True
         created_at=datetime.now(timezone.utc),
         is_active=True
     )
