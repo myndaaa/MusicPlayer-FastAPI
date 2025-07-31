@@ -7,6 +7,9 @@ from app.core.custom_exception import PasswordVerificationError, JWTExpiredError
 from app.core.exception_handler import ( password_verification_exception_handler,validation_exception_handler,http_exception_handler,
 jwt_expired_exception_handler, jwt_decode_exception_handler, jwt_decode_exception_handler )
 
+# Import database models to ensure they are loaded
+from app.db.base import *
+
 app = FastAPI(
     title="Music Streaming API",
     description="Backend API for the Music Player App",
@@ -25,8 +28,8 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.user import router as user_router
 
 # Router inclusion and prefix declaration
-app.include_router(auth_router, prefix="/api/v1/auth", tags=["authentication"])
-app.include_router(user_router, prefix="/api/v1/users", tags=["users"])
+app.include_router(auth_router, prefix="/auth", tags=["authentication"])
+app.include_router(user_router, prefix="/users", tags=["users"])
 
 
 # CORS configuration
