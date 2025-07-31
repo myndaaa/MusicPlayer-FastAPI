@@ -28,6 +28,28 @@ class UserBase(BaseModel):
         use_enum_values = True  # Ensures role = "admin", not UserRole.admin
 
 
+class UserSignupBase(BaseModel):
+    username: ShortStr
+    first_name: ShortStr
+    last_name: ShortStr
+    email: EmailStr
+    password: PasswordStr
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, value: str) -> str:
+        """
+        Enforces strong password: One uppercase, one lowercase, one special char
+        """
+        if not re.search(r"[A-Z]", value):
+            raise ValueError("Password must include at least one uppercase letter.")
+        if not re.search(r"[a-z]", value):
+            raise ValueError("Password must include at least one lowercase letter.")
+        if not re.search(r"[\W_]", value):
+            raise ValueError("Password must include at least one special character.")
+        return value
+
+
 class UserCreate(UserBase):
     password: PasswordStr
 

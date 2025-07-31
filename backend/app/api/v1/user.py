@@ -6,7 +6,7 @@ from app.db.session import get_db
 from app.db.models.user import User
 from app.schemas.user import (
     UserCreate, UserUpdate, UserPasswordUpdate, UserOut, UserRole,
-    UserLogin, UserInDB
+    UserLogin, UserInDB, UserSignupBase
 )
 from app.crud.user import (
     create_user, get_user_by_id, get_user_by_username, get_user_by_email,
@@ -19,8 +19,8 @@ from app.crud.user import (
     update_last_login, validate_user_role
 )
 from app.api.v1.deps import (
-    get_current_active_user, get_current_admin, get_current_listener,
-    get_current_musician, get_current_user_or_optional,
+    get_current_active_user, get_current_admin, get_current_listener_user,
+    get_current_musician_user, get_current_user_or_optional,
     get_current_admin_user, get_current_musician_user, get_current_listener_user
 )
 
@@ -28,7 +28,7 @@ router = APIRouter()
 
 
 @router.post("/signup/listener", response_model=UserOut)
-async def signup_listener( user_data: UserCreate, db: Session = Depends(get_db)):
+async def signup_listener(user_data: UserSignupBase, db: Session = Depends(get_db)):
     """
     Sign up a new listener user.
     - Validates user data and password strength
@@ -36,8 +36,15 @@ async def signup_listener( user_data: UserCreate, db: Session = Depends(get_db))
     - Automatically sets role to 'listener'
     - Creates active user account
     """
-    # Ensure role is set to listener
-    user_data.role = UserRole.listener
+    # Create UserCreate object with role set to listener
+    user_create_data = UserCreate(
+        username=user_data.username,
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        email=user_data.email,
+        password=user_data.password,
+        role=UserRole.listener
+    )
     
     # Check if username already exists
     if get_user_by_username(db, user_data.username):
@@ -54,7 +61,7 @@ async def signup_listener( user_data: UserCreate, db: Session = Depends(get_db))
         )
     
     try:
-        user = create_user(db, user_data)
+        user = create_user(db, user_create_data)
         return user
     except Exception as e:
         raise HTTPException(
