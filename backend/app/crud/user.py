@@ -470,6 +470,23 @@ def get_active_user_count(db: Session) -> int:
     """
     return db.query(User).filter(User.is_active == True).count()
 
+def update_last_login(db: Session, user_id: int) -> bool:
+    """
+    Updates the user's last login timestamp.
+    Called after successful authentication
+    to track user activity and session management.
+    Args:
+        db: Database session
+        user_id: ID of the user
+    Returns:
+        bool: True if updated successfully, False if user not found
+    """
+    user = get_user_by_id(db, user_id)
+    if not user:
+        return False
+    user.last_login = datetime.now(timezone.utc)
+    db.commit()
+    return True
 
 
 def validate_user_role(db: Session, user_id: int, required_role: UserRole) -> bool:
