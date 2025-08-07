@@ -130,11 +130,11 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: _isSuccessAlert ? Colors.green.withOpacity(0.9) : Colors.red.withOpacity(0.9),
+          color: _isSuccessAlert ? Colors.green.withValues(alpha: 0.9) : Colors.red.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -187,22 +187,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF212529),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF83bef2)),
-          onPressed: () => Navigator.pushReplacementNamed(context, '/'),
-        ),
-        title: const Text(
-          "Create Account",
-          style: TextStyle(color: Color(0xFFdfe8f0)),
-        ),
-        centerTitle: true,
-      ),
       body: Column(
         children: [
-          // error alert at the top
+          // alert at the top
           _buildErrorAlert(),
           
           // main content
@@ -216,6 +203,20 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                     key: _formKey,
                     child: Column(
                       children: [
+                        // clean back button at the top
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                color: Color(0xFF83bef2),
+                                size: 28,
+                              ),
+                            ),
+                          ],
+                        ),
+                        
                         // app logo
                         Image.asset(
                           'assets/app.png',

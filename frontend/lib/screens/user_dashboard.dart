@@ -121,12 +121,12 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> with TickerPr
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: _isSuccessAlert 
-              ? Colors.green.withOpacity(0.9)
-              : Colors.red.withOpacity(0.9),
+              ? Colors.green.withValues(alpha: 0.9)
+              : Colors.red.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
