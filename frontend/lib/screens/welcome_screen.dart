@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import '../services/auth_service.dart';
 
+// This is the first screen users see when they open the app
+// It shows a welcome message and lets them log in
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -8,36 +13,104 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  bool _showLoginForm = false;
-  final _formKey = GlobalKey<FormState>();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  // These variables keep track of what the screen should show
+  bool _showLoginForm = false; // Whether to show the login form or welcome screen
+  bool _isLoading = false; // Whether we're currently trying to log in
+  final _formKey = GlobalKey<FormState>(); // Helps us validate the login form
+  final usernameController = TextEditingController(); // Holds what the user types for username
+  final passwordController = TextEditingController(); // Holds what the user types for password
 
+  // This runs when the screen first loads
+  // It sets up the auth service and checks if the user is already logged in
+  @override
+  void initState() {
+    super.initState();
+    _initializeAuth();
+  }
+
+  // Sets up the auth service and checks if the user is already logged in
+  // If they are, it automatically takes them to the dashboard
+  Future<void> _initializeAuth() async {
+    await AuthService.init();
+    // Check if user is already logged in
+    final isLoggedIn = await AuthService.isLoggedIn();
+    if (isLoggedIn && mounted) {
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    }
+  }
+
+  // Clean up when done with this screen to prevent memory leaks
   @override
   void dispose() {
-    emailController.dispose();
+    usernameController.dispose();
     passwordController.dispose();
     super.dispose();
   }
 
-  void _onLogin() {
+  // validates input, shows a loading spinner, and tries to log them in
+  Future<void> _onLogin() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Connect to API later
-      print("Logging in...");
-      print("Email: ${emailController.text}");
-      print("Password: ${passwordController.text}");
-      
-      // Navigate to dashboard after successful login
-      Navigator.pushNamed(context, '/dashboard');
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        // Try to log the user in with what they typed
+        final result = await AuthService.login(
+          usernameController.text.trim(),
+          passwordController.text,
+        );
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+
+          if (result['success']) {
+            // Show a success message and go to dashboard
+            Fluttertoast.showToast(
+              msg: "Login successful!",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Colors.green,
+            );
+            Navigator.pushReplacementNamed(context, '/dashboard');
+          } else {
+            // Login failed - show the error message
+            Fluttertoast.showToast(
+              msg: result['error'] ?? "Login failed",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Colors.red,
+            );
+          }
+        }
+      } catch (e) {
+        // Something unexpected went wrong
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          Fluttertoast.showToast(
+            msg: "An error occurred: $e",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red,
+          );
+        }
+      }
     }
   }
 
+  // Switches between showing the welcome screen and the login form
   void _toggleLoginForm() {
     setState(() {
       _showLoginForm = !_showLoginForm;
     });
   }
 
+  // Creates a text field that looks nice and matches our app's style
+  // This is used for both username and password fields
   Widget _buildTextField(
       TextEditingController controller,
       String label, {
@@ -48,7 +121,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
         controller: controller,
-        obscureText: isPassword,
+        obscureText: isPassword, // Hide the text if it's a password field
         keyboardType:
         isEmail ? TextInputType.emailAddress : TextInputType.text,
         style: const TextStyle(color: Color(0xFFdfe8f0)),
@@ -63,6 +136,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
         ),
         validator: (value) {
+          // Make sure the user actually typed something
           if (value == null || value.isEmpty) {
             return '$label is required';
           }
@@ -75,6 +149,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
+  // Shows the welcome screen with the app logo and login button
   Widget _buildWelcomeView() {
     return Center(
       child: SingleChildScrollView(
@@ -84,7 +159,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
+              // Show the app logo
               Image.asset(
                 'assets/app.png',
                 width: 120,
@@ -93,7 +168,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
               const SizedBox(height: 16),
 
-              // App Name
+              // Show the app name
               const Text(
                 "Mplayer",
                 textAlign: TextAlign.center,
@@ -106,7 +181,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
               const SizedBox(height: 48),
 
-              // Login Button
+              // The main login button that switches to the login form
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -128,7 +203,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
               const SizedBox(height: 16),
 
-              // Sign up link
+              // Link to sign up as a regular user
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -153,7 +228,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
               const SizedBox(height: 8),
 
-              // Sign up as Artist button
+              // Link to sign up as an artist
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, '/artist-signup');
@@ -170,6 +245,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
+  // Shows the login form with username and password fields
   Widget _buildLoginForm() {
     return Center(
       child: SingleChildScrollView(
@@ -180,7 +256,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             key: _formKey,
             child: Column(
               children: [
-                // Back button
+                // Back button to go back to the welcome screen
                 Row(
                   children: [
                     IconButton(
@@ -202,7 +278,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                 const SizedBox(height: 20),
 
-                // Logo
+                // Smaller app logo
                 Image.asset(
                   'assets/app.png',
                   width: 80,
@@ -211,7 +287,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                 const SizedBox(height: 16),
 
-                // Title
+                // Welcome message
                 const Text(
                   "Welcome Back",
                   style: TextStyle(
@@ -223,18 +299,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                 const SizedBox(height: 32),
 
-                // Form fields
-                _buildTextField(emailController, "Email", isEmail: true),
+                // The username and password fields
+                _buildTextField(usernameController, "Username"),
                 _buildTextField(passwordController, "Password", isPassword: true),
                 const SizedBox(height: 24),
 
-                // Login button
+                // The login button that tries to log the user in
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 240),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _onLogin,
+                      onPressed: _isLoading ? null : _onLogin, // Don't let them click while loading
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF83bef2),
                         foregroundColor: Colors.black,
@@ -243,14 +319,23 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text("Login"),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: SpinKitCircle(
+                                color: Colors.black,
+                                size: 20,
+                              ),
+                            )
+                          : const Text("Login"),
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 16),
 
-                // Sign up link
+                // Link to sign up if they don't have an account
                 TextButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '/register');
@@ -268,10 +353,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
+  // This decides whether to show the welcome screen or the login form
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF212529),
+      backgroundColor: const Color(0xFF212529), // Dark background
       body: _showLoginForm ? _buildLoginForm() : _buildWelcomeView(),
     );
   }
