@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import '../services/auth_service.dart';
 
 // Screen for creating new user accounts
@@ -15,6 +14,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false; // shows loading spinner during registration
   String? _errorMessage; // stores error message to show in alert
+  bool _isSuccessAlert = false; // whether it's a success or error alert
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -54,10 +54,11 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     super.dispose();
   }
 
-  // shows error alert at the top of the screen
-  void _showErrorAlert(String message) {
+  // shows beautiful alert at the top of the screen
+  void _showErrorAlert(String message, {bool isSuccess = false}) {
     setState(() {
       _errorMessage = message;
+      _isSuccessAlert = isSuccess;
     });
     _animationController.forward();
     
@@ -96,13 +97,12 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
 
           if (result['success']) {
             // registration successful - show success message and go to login
-            Fluttertoast.showToast(
-              msg: "Account created successfully! Please log in.",
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.green,
-            );
-            Navigator.pushReplacementNamed(context, '/'); // go back to welcome screen
+            _showErrorAlert("Account created successfully! Please log in.", isSuccess: true);
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                Navigator.pushReplacementNamed(context, '/'); // go back to welcome screen
+              }
+            });
           } else {
             // registration failed - show error alert
             _showErrorAlert(result['error'] ?? "Registration failed");
@@ -130,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.red.withOpacity(0.9),
+          color: _isSuccessAlert ? Colors.green.withOpacity(0.9) : Colors.red.withOpacity(0.9),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -142,8 +142,8 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         ),
         child: Row(
           children: [
-            const Icon(
-              Icons.error_outline,
+            Icon(
+              _isSuccessAlert ? Icons.check_circle : Icons.error_outline,
               color: Colors.white,
               size: 20,
             ),
