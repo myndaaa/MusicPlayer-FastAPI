@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import '../widgets/details_panel.dart';
 import '../widgets/music_player.dart';
 import '../widgets/side_panel.dart';
@@ -14,11 +13,15 @@ class UserDashboardScreen extends StatefulWidget {
   State<UserDashboardScreen> createState() => _UserDashboardScreenState();
 }
 
-class _UserDashboardScreenState extends State<UserDashboardScreen> {
+class _UserDashboardScreenState extends State<UserDashboardScreen> with TickerProviderStateMixin {
   // This holds the user's info like their name and email
   Map<String, dynamic>? _userInfo;
   // This tells us if we're still loading the user's info
   bool _isLoading = true;
+  String? _alertMessage; // stores alert message to show
+  bool _isSuccessAlert = false; // whether it's a success or error alert
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   // This runs when the screen first loads
   // It gets the user's info from the backend
@@ -26,6 +29,17 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
   void initState() {
     super.initState();
     _loadUserInfo();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   // Gets the current user's info from the backend
@@ -50,29 +64,115 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
     }
   }
 
+  // shows beautiful alert at the top of the screen
+  void _showAlert(String message, bool isSuccess) {
+    setState(() {
+      _alertMessage = message;
+      _isSuccessAlert = isSuccess;
+    });
+    _animationController.forward();
+    
+    // auto-hide after 4 seconds
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) {
+        _animationController.reverse().then((_) {
+          setState(() {
+            _alertMessage = null;
+          });
+        });
+      }
+    });
+  }
+
   // This logs the user out and takes them back to the welcome screen
   Future<void> _logout() async {
     try {
       await AuthService.logout();
       if (mounted) {
-        Fluttertoast.showToast(
-          msg: "Logged out successfully",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.green,
-        );
-        Navigator.pushReplacementNamed(context, '/');
+        _showAlert("Logged out successfully", true);
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/');
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
-        Fluttertoast.showToast(
-          msg: "Error logging out: $e",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.red,
-        );
+        _showAlert("Error logging out: $e", false);
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  // beautiful alert widget
+  Widget _buildAlert() {
+    if (_alertMessage == null) return const SizedBox.shrink();
+    
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: _isSuccessAlert 
+              ? Colors.green.withOpacity(0.9)
+              : Colors.red.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              _isSuccessAlert ? Icons.check_circle_outline : Icons.error_outline,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _alertMessage!,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                _animationController.reverse().then((_) {
+                  setState(() {
+                    _alertMessage = null;
+                  });
+                });
+              },
+              icon: const Icon(
+                Icons.close,
+                color: Colors.white,
+                size: 18,
+              ),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(
+                minWidth: 24,
+                minHeight: 24,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -81,6 +181,9 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
       backgroundColor: const Color(0xFF212529),
       body: Column(
         children: [
+          // alert at the top
+          _buildAlert(),
+          
           // The top bar with the app logo and user info
           Container(
             color: const Color(0xFF1c1f22),

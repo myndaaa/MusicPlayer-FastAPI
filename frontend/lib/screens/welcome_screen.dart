@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import '../services/auth_service.dart';
 
 // This is the first screen users see when they open the app
@@ -12,13 +11,17 @@ class WelcomeScreen extends StatefulWidget {
   State<WelcomeScreen> createState() => _WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen> {
+class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateMixin {
   // These variables keep track of what the screen should show
   bool _showLoginForm = false; // Whether to show the login form or welcome screen
   bool _isLoading = false; // Whether we're currently trying to log in
+  String? _alertMessage; // stores alert message to show
+  bool _isSuccessAlert = false; // whether it's a success or error alert
   final _formKey = GlobalKey<FormState>(); // Helps us validate the login form
   final usernameController = TextEditingController(); // Holds what the user types for username
   final passwordController = TextEditingController(); // Holds what the user types for password
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   // This runs when the screen first loads
   // It sets up the auth service and checks if the user is already logged in
@@ -26,6 +29,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void initState() {
     super.initState();
     _initializeAuth();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   // Sets up the auth service and checks if the user is already logged in
@@ -39,12 +53,33 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
-  // Clean up when done with this screen to prevent memory leaks
+  // Clean up when we're done with this screen to prevent memory leaks
   @override
   void dispose() {
+    _animationController.dispose();
     usernameController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  // shows beautiful alert at the top of the screen
+  void _showAlert(String message, bool isSuccess) {
+    setState(() {
+      _alertMessage = message;
+      _isSuccessAlert = isSuccess;
+    });
+    _animationController.forward();
+    
+    // auto-hide after 4 seconds
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) {
+        _animationController.reverse().then((_) {
+          setState(() {
+            _alertMessage = null;
+          });
+        });
+      }
+    });
   }
 
   // validates input, shows a loading spinner, and tries to log them in
@@ -68,21 +103,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
           if (result['success']) {
             // Show a success message and go to dashboard
-            Fluttertoast.showToast(
-              msg: "Login successful!",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.green,
-            );
-            Navigator.pushReplacementNamed(context, '/dashboard');
+            _showAlert("Login successful!", true);
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                Navigator.pushReplacementNamed(context, '/dashboard');
+              }
+            });
           } else {
             // Login failed - show the error message
-            Fluttertoast.showToast(
-              msg: result['error'] ?? "Login failed",
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.red,
-            );
+            _showAlert(result['error'] ?? "Login failed", false);
           }
         }
       } catch (e) {
@@ -91,12 +120,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           setState(() {
             _isLoading = false;
           });
-          Fluttertoast.showToast(
-            msg: "An error occurred: $e",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.red,
-          );
+          _showAlert("An error occurred: $e", false);
         }
       }
     }
@@ -145,6 +169,72 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           }
           return null;
         },
+      ),
+    );
+  }
+
+  // beautiful alert widget
+  Widget _buildAlert() {
+    if (_alertMessage == null) return const SizedBox.shrink();
+    
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: _isSuccessAlert 
+              ? Colors.green.withOpacity(0.9)
+              : Colors.red.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              _isSuccessAlert ? Icons.check_circle_outline : Icons.error_outline,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _alertMessage!,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                _animationController.reverse().then((_) {
+                  setState(() {
+                    _alertMessage = null;
+                  });
+                });
+              },
+              icon: const Icon(
+                Icons.close,
+                color: Colors.white,
+                size: 18,
+              ),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(
+                minWidth: 24,
+                minHeight: 24,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -338,7 +428,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 // Link to sign up if they don't have an account
                 TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/register');
+                    Navigator.pushReplacementNamed(context, '/register');
                   },
                   child: const Text(
                     "Don't have an account? Sign up",
@@ -358,7 +448,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF212529), // Dark background
-      body: _showLoginForm ? _buildLoginForm() : _buildWelcomeView(),
+      body: Column(
+        children: [
+          // alert at the top
+          _buildAlert(),
+          
+          // main content
+          Expanded(
+            child: _showLoginForm ? _buildLoginForm() : _buildWelcomeView(),
+          ),
+        ],
+      ),
     );
   }
 }
