@@ -19,9 +19,7 @@ from app.crud.user import (
     
 )
 from app.api.v1.deps import (
-    get_current_active_user, get_current_admin, get_current_listener_user,
-    get_current_musician_user, get_current_user_or_optional,
-    get_current_admin_user, get_current_musician_user, get_current_listener_user
+    get_current_active_user, get_current_admin, get_current_user_optional
 )
 
 router = APIRouter()
@@ -73,30 +71,6 @@ async def create_user_signup(
         )
 
 
-@router.get("/{user_id}", response_model=UserOut)
-async def get_user_public_profile(
-    user_id: int,
-    db: Session = Depends(get_db)
-):
-    """
-    Get public user profile by ID.
-    
-    Returns basic user information for public viewing.
-    Only active users are returned.
-    
-    Returns: 200 OK - User profile found
-    Returns: 404 Not Found - User not found or inactive
-    """
-    user = get_user_by_id(db, user_id)
-    if not user or not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,  # 404 Not Found - resource doesn't exist
-            detail="User not found"
-        )
-    
-    return user
-
-
 @router.get("/", response_model=List[UserOut])
 async def get_users_public(
     db: Session = Depends(get_db),
@@ -133,8 +107,11 @@ async def get_current_user_profile(
     current_user: Annotated[User, Depends(get_current_active_user)]
 ):
     """
-    Get current user's profile.
-    Returns the authenticated user's complete profile data.
+    Get current user's profile information.
+    
+    Returns the authenticated user's profile data.
+    Requires authentication.
+    
     Returns: 200 OK - Current user profile
     """
     return current_user
@@ -147,20 +124,20 @@ async def update_current_user_profile(
     db: Session = Depends(get_db)
 ):
     """
-    Update current user's profile.
-    - Users can only update their own profile
-    - Validates unique constraints for username/email
-    - Only updates provided fields
-    - Cannot change role or sensitive fields
-    Returns: 200 OK - Profile updated successfully
-    Returns: 404 Not Found - User not found
-    Returns: 409 Conflict - Username/email already exists
+    Update current user's profile information.
+    
+    Allows users to update their own profile data.
+    Cannot change role or sensitive fields.
+    Requires authentication.
+    
+    Returns: 200 OK - Updated user profile
+    Returns: 400 Bad Request - Invalid data
     """
     updated_user = update_user(db, current_user.id, user_data)
     if not updated_user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,  # 404 Not Found user not found
-            detail="User not found"
+            status_code=status.HTTP_400_BAD_REQUEST,  # 400 Bad Request - invalid data
+            detail="Failed to update user profile"
         )
     return updated_user
 
@@ -172,16 +149,20 @@ async def partial_update_current_user_profile(
     db: Session = Depends(get_db)
 ):
     """
-    Partially update current user's profile.
-    Same as PUT but partial updates.
-    Returns: 200 OK - Profile updated successfully
-    Returns: 404 Not Found - User not found
+    Partially update current user's profile information.
+    
+    Allows users to update specific fields of their profile.
+    Cannot change role or sensitive fields.
+    Requires authentication.
+    
+    Returns: 200 OK - Updated user profile
+    Returns: 400 Bad Request - Invalid data
     """
     updated_user = update_user(db, current_user.id, user_data)
     if not updated_user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_400_BAD_REQUEST,  # 400 Bad Request - invalid data
+            detail="Failed to update user profile"
         )
     return updated_user
 
@@ -193,18 +174,21 @@ async def update_current_user_password(
     db: Session = Depends(get_db)
 ):
     """
-    Change current user's password.
-    - Users can only change their own password
-    - Validates old password
-    - Ensures new password meets strength requirements
+    Update current user's password.
+    
+    Requires current password verification.
+    Validates new password strength.
+    Requires authentication.
+    
     Returns: 200 OK - Password updated successfully
-    Returns: 400 Bad Request - Invalid old password
+    Returns: 400 Bad Request - Invalid password data
+    Returns: 401 Unauthorized - Current password incorrect
     """
     success = change_password(db, current_user.id, password_data)
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,  # 400 Bad Request - invalid old password
-            detail="Invalid old password"
+            status_code=status.HTTP_400_BAD_REQUEST,  # 400 Bad Request - invalid password
+            detail="Failed to update password"
         )
     return {"message": "Password updated successfully"}
 
@@ -215,20 +199,22 @@ async def delete_current_user_account(
     db: Session = Depends(get_db)
 ):
     """
-    Deactivate current user's account.
-    - Users can only deactivate their own account
-    - Sets is_active to False
-    - Records deactivation timestamp
+    Delete current user's account.
     
-    Returns: 200 OK - Account deactivated successfully
+    Permanently deactivates the user account.
+    Requires authentication.
+    
+    Returns: 200 OK - Account deleted successfully
     """
+    # Deactivate user instead of hard delete for data integrity
     success = deactivate_user(db, current_user.id)
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Failed to deactivate account"
+            status_code=status.HTTP_400_BAD_REQUEST,  # 400 Bad Request - failed to delete
+            detail="Failed to delete user account"
         )
-    return {"message": "Account deactivated successfully"}
+    return {"message": "Account deleted successfully"}
+
 
 @router.get("/me/playlists")
 async def get_current_user_playlists(
@@ -239,16 +225,14 @@ async def get_current_user_playlists(
 ):
     """
     Get current user's playlists.
-    Returns paginated list of playlists owned by the current user.
-    Returns: 200 OK - List of user's playlists
+    
+    Returns paginated list of user's playlists.
+    Requires authentication.
+    
+    Returns: 200 OK - List of playlists
     """
     playlists = get_user_playlists(db, current_user.id, skip=skip, limit=limit)
-    return {
-        "playlists": playlists,
-        "total": len(playlists),
-        "skip": skip,
-        "limit": limit
-    }
+    return playlists
 
 
 @router.get("/me/likes")
@@ -260,16 +244,14 @@ async def get_current_user_likes(
 ):
     """
     Get current user's liked songs.
-    Returns paginated list of songs liked by the current user.
-    Returns: 200 OK - List of user's liked songs
+    
+    Returns paginated list of user's liked songs.
+    Requires authentication.
+    
+    Returns: 200 OK - List of liked songs
     """
     likes = get_user_likes(db, current_user.id, skip=skip, limit=limit)
-    return {
-        "likes": likes,
-        "total": len(likes),
-        "skip": skip,
-        "limit": limit
-    }
+    return likes
 
 
 @router.get("/me/history")
@@ -281,16 +263,14 @@ async def get_current_user_history(
 ):
     """
     Get current user's listening history.
+    
     Returns paginated list of user's listening history.
-    Returns: 200 OK - List of user's history
+    Requires authentication.
+    
+    Returns: 200 OK - List of history records
     """
     history = get_user_history(db, current_user.id, skip=skip, limit=limit)
-    return {
-        "history": history,
-        "total": len(history),
-        "skip": skip,
-        "limit": limit
-    }
+    return history
 
 
 @router.get("/me/subscriptions")
@@ -301,17 +281,15 @@ async def get_current_user_subscriptions(
     limit: int = Query(50, ge=1, le=200, description="Maximum number of records to return")
 ):
     """
-    Get current user's subscriptions.
-    Returns paginated list of user's subscription records.
-    Returns: 200 OK - List of user's subscriptions
+    Get current user's subscription information.
+    
+    Returns paginated list of user's subscriptions.
+    Requires authentication.
+    
+    Returns: 200 OK - List of subscriptions
     """
     subscriptions = get_user_subscriptions(db, current_user.id, skip=skip, limit=limit)
-    return {
-        "subscriptions": subscriptions,
-        "total": len(subscriptions),
-        "skip": skip,
-        "limit": limit
-    }
+    return subscriptions
 
 
 @router.get("/me/payments")
@@ -323,16 +301,38 @@ async def get_current_user_payments(
 ):
     """
     Get current user's payment history.
+    
     Returns paginated list of user's payment records.
-    Returns: 200 OK - List of user's payments
+    Requires authentication.
+    
+    Returns: 200 OK - List of payment records
     """
     payments = get_user_payments(db, current_user.id, skip=skip, limit=limit)
-    return {
-        "payments": payments,
-        "total": len(payments),
-        "skip": skip,
-        "limit": limit
-    }
+    return payments
+
+
+@router.get("/{user_id}", response_model=UserOut)
+async def get_user_public_profile(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Get public user profile by ID.
+    
+    Returns basic user information for public viewing.
+    Only active users are returned.
+    
+    Returns: 200 OK - User profile found
+    Returns: 404 Not Found - User not found or inactive
+    """
+    user = get_user_by_id(db, user_id)
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,  # 404 Not Found - resource doesn't exist
+            detail="User not found"
+        )
+    
+    return user
 
 
 @router.post("/", response_model=UserOut, status_code=status.HTTP_201_CREATED)

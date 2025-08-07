@@ -70,9 +70,10 @@ class AuthService:
         # store refresh token in database
         self._store_refresh_token(refresh_token, user.id)
         
-        # decode access token to get expiration
+        # decode access token to get expiration (now returns Unix timestamp)
         token_data = decode_token(access_token)
-        expires_in = int((token_data["exp"] - datetime.now(timezone.utc)).total_seconds())
+        current_time = int(datetime.now(timezone.utc).timestamp())
+        expires_in = token_data["exp"] - current_time
         
         return TokenResponse(
             access_token=access_token,
@@ -147,7 +148,9 @@ class AuthService:
         new_db_token = self._store_refresh_token(new_refresh_token, user.id, db_token.id)
         # decode to get expiration
         new_token_data = decode_token(new_access_token)
-        expires_in = int((new_token_data["exp"] - datetime.now(timezone.utc)).total_seconds())
+        # Calculate expiration using Unix timestamps
+        current_time = int(datetime.now(timezone.utc).timestamp())
+        expires_in = new_token_data["exp"] - current_time
         return TokenResponse(
             access_token=new_access_token,
             refresh_token=new_refresh_token,  # new rotated refresh token
@@ -246,9 +249,10 @@ class AuthService:
         Returns:
             RefreshToken object
         """
-        # decode token to get expiration
+        # decode token to get expiration (Unix timestamp)
         token_data = decode_token(token)
-        expires_at = token_data["exp"]
+        # Convert Unix timestamp to datetime for database storage
+        expires_at = datetime.fromtimestamp(token_data["exp"], tz=timezone.utc)
         
         # create database record
         db_token = RefreshToken(

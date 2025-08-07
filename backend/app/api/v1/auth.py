@@ -6,7 +6,7 @@ from app.db.models.user import User
 from app.schemas.user import UserLogin, UserOut
 from app.schemas.token import TokenResponse, TokenRefresh
 from app.services.auth import AuthService
-from app.api.v1.deps import get_current_active_user, get_auth_service
+from app.api.v1.deps import get_current_active_user, get_current_admin, get_auth_service
 
 router = APIRouter()
 
@@ -120,30 +120,16 @@ async def get_current_user_info(
     return current_user
 
 
-@router.post("/validate")
-async def validate_token(
-    auth_service: Annotated[AuthService, Depends(get_auth_service)]
-):
-    """
-    Validate current access token.
-    - Validates the access token from Authorization header
-    - Returns token information if valid
-    - Useful for frontend token validation
-    """
-    # validation done in the deps.py
-    # once code reaches here.. the token is valid
-    return {"message": "Token is valid"}
-
-
 @router.post("/cleanup-expired")
 async def cleanup_expired_tokens(
+    current_admin: Annotated[User, Depends(get_current_admin)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)]
 ):
     """
-    Clean up expired refresh tokens from database.
+    Clean up expired refresh tokens from database (Admin only).
     - Removes expired refresh tokens
     - Helps maintain database performance
-    - Should be called periodically (e.g., via cron job)
+    - Admin access required
     """
     cleaned_count = auth_service.cleanup_expired_tokens()
     return {
