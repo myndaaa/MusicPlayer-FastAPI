@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../services/auth_service.dart';
 
-// Screen for creating new user accounts
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -12,19 +11,17 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false; // shows loading spinner during registration
-  String? _errorMessage; // stores error message to show in alert
-  bool _isSuccessAlert = false; // whether it's a success or error alert
+  final _usernameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
+  bool _isSuccessAlert = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-
-  // Text controllers for form fields
-  final usernameController = TextEditingController();
-  final firstNameController = TextEditingController();
-  final lastNameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -45,24 +42,22 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
   @override
   void dispose() {
     _animationController.dispose();
-    usernameController.dispose();
-    firstNameController.dispose();
-    lastNameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
+    _usernameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  // shows beautiful alert at the top of the screen
-  void _showErrorAlert(String message, {bool isSuccess = false}) {
+  void _showErrorAlert(String message) {
     setState(() {
       _errorMessage = message;
-      _isSuccessAlert = isSuccess;
+      _isSuccessAlert = false;
     });
     _animationController.forward();
     
-    // auto-hide after 4 seconds
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
         _animationController.reverse().then((_) {
@@ -74,20 +69,24 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     });
   }
 
-  // handles the registration process
   Future<void> _onRegister() async {
     if (_formKey.currentState!.validate()) {
+      if (_passwordController.text != _confirmPasswordController.text) {
+        _showErrorAlert("Passwords do not match");
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
 
       try {
         final result = await AuthService.register(
-          username: usernameController.text.trim(),
-          firstName: firstNameController.text.trim(),
-          lastName: lastNameController.text.trim(),
-          email: emailController.text.trim(),
-          password: passwordController.text,
+          username: _usernameController.text,
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          email: _emailController.text,
+          password: _passwordController.text,
         );
 
         if (mounted) {
@@ -96,16 +95,18 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
           });
 
           if (result['success']) {
-            // registration successful - show success message and go to login
-            _showErrorAlert("Account created successfully! Please log in.", isSuccess: true);
+            setState(() {
+              _errorMessage = "Account created successfully!";
+              _isSuccessAlert = true;
+            });
+            _animationController.forward();
             Future.delayed(const Duration(milliseconds: 500), () {
               if (mounted) {
-                Navigator.pushReplacementNamed(context, '/'); // go back to welcome screen
+                Navigator.pushReplacementNamed(context, '/');
               }
             });
           } else {
-            // registration failed - show error alert
-            _showErrorAlert(result['error'] ?? "Registration failed");
+            _showErrorAlert(result['error'] ?? 'Registration failed');
           }
         }
       } catch (e) {
@@ -113,13 +114,12 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
           setState(() {
             _isLoading = false;
           });
-          _showErrorAlert("An error occurred: $e");
+          _showErrorAlert("Registration failed: $e");
         }
       }
     }
   }
 
-  // beautiful error alert widget
   Widget _buildErrorAlert() {
     if (_errorMessage == null) return const SizedBox.shrink();
     
@@ -130,7 +130,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: _isSuccessAlert ? Colors.green.withValues(alpha: 0.9) : Colors.red.withValues(alpha: 0.9),
+          color: _isSuccessAlert 
+              ? Colors.green.withValues(alpha: 0.9)
+              : Colors.red.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -143,7 +145,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         child: Row(
           children: [
             Icon(
-              _isSuccessAlert ? Icons.check_circle : Icons.error_outline,
+              _isSuccessAlert ? Icons.check_circle_outline : Icons.error_outline,
               color: Colors.white,
               size: 20,
             ),
@@ -189,10 +191,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
       backgroundColor: const Color(0xFF212529),
       body: Column(
         children: [
-          // alert at the top
           _buildErrorAlert(),
-          
-          // main content
           Expanded(
             child: Center(
               child: SingleChildScrollView(
@@ -203,7 +202,6 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                     key: _formKey,
                     child: Column(
                       children: [
-                        // clean back button at the top
                         Row(
                           children: [
                             IconButton(
@@ -216,16 +214,12 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                             ),
                           ],
                         ),
-                        
-                        // app logo
                         Image.asset(
                           'assets/app.png',
                           width: 80,
                           height: 80,
                         ),
                         const SizedBox(height: 16),
-                        
-                        // welcome message
                         const Text(
                           "Join Mplayer",
                           style: TextStyle(
@@ -243,23 +237,20 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                           ),
                         ),
                         const SizedBox(height: 32),
-
-                        // form fields in two columns for better layout
                         Row(
                           children: [
                             Expanded(
-                              child: _buildTextField(firstNameController, "First Name"),
+                              child: _buildTextField(_firstNameController, "First Name"),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: _buildTextField(lastNameController, "Last Name"),
+                              child: _buildTextField(_lastNameController, "Last Name"),
                             ),
                           ],
                         ),
-                        _buildTextField(usernameController, "Username"),
-                        _buildTextField(emailController, "Email", isEmail: true),
-                        _buildTextField(passwordController, "Password", isPassword: true),
-                        // Password requirements hint
+                        _buildTextField(_usernameController, "Username"),
+                        _buildTextField(_emailController, "Email", isEmail: true),
+                        _buildTextField(_passwordController, "Password", isPassword: true),
                         Padding(
                           padding: const EdgeInsets.only(left: 12, bottom: 8),
                           child: Text(
@@ -270,11 +261,8 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                             ),
                           ),
                         ),
-                        _buildTextField(confirmPasswordController, "Confirm Password", isPassword: true),
-                        
+                        _buildTextField(_confirmPasswordController, "Confirm Password", isPassword: true),
                         const SizedBox(height: 24),
-
-                        // register button
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 240),
                           child: SizedBox(
@@ -302,10 +290,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 16),
-
-                        // login link
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -334,7 +319,6 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     );
   }
 
-  // creates a styled text field
   Widget _buildTextField(
       TextEditingController controller,
       String label, {
@@ -346,8 +330,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
       child: TextFormField(
         controller: controller,
         obscureText: isPassword,
-        keyboardType:
-        isEmail ? TextInputType.emailAddress : TextInputType.text,
+        keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
         style: const TextStyle(color: Color(0xFFdfe8f0)),
         decoration: InputDecoration(
           labelText: label,
@@ -379,9 +362,6 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
             if (!RegExp(r'[\W_]').hasMatch(value)) {
               return 'Password must include at least one special character';
             }
-          }
-          if (label == "Confirm Password" && value != passwordController.text) {
-            return 'Passwords do not match';
           }
           return null;
         },

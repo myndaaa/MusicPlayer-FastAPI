@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-
-// Screen for creating artist accounts
 class ArtistSignupScreen extends StatefulWidget {
   const ArtistSignupScreen({super.key});
 
@@ -12,13 +10,12 @@ class ArtistSignupScreen extends StatefulWidget {
 
 class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false; // shows loading spinner during registration
-  String? _errorMessage; // stores error message to show in alert
-  bool _isSuccessAlert = false; // whether it's a success or error alert
+  bool _isLoading = false;
+  String? _errorMessage;
+  bool _isSuccessAlert = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  // Text controllers for form fields
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final firstNameController = TextEditingController();
@@ -56,7 +53,6 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
     super.dispose();
   }
 
-  // shows beautiful alert at the top of the screen
   void _showAlert(String message, bool isSuccess) {
     setState(() {
       _errorMessage = message;
@@ -64,7 +60,6 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
     });
     _animationController.forward();
     
-    // auto-hide after 4 seconds
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
         _animationController.reverse().then((_) {
@@ -76,7 +71,6 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
     });
   }
 
-  // handles the artist registration process
   Future<void> _onArtistRegister() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -84,8 +78,6 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
       });
 
       try {
-        // TODO: Add artist registration API call
-        // For now, just simulate success
         await Future.delayed(const Duration(seconds: 2));
         
         if (mounted) {
@@ -110,7 +102,6 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
     }
   }
 
-  // beautiful alert widget
   Widget _buildAlert() {
     if (_errorMessage == null) return const SizedBox.shrink();
     
@@ -182,10 +173,7 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
       backgroundColor: const Color(0xFF212529),
       body: Column(
         children: [
-          // alert at the top
           _buildAlert(),
-          
-          // main content
           Expanded(
             child: Center(
               child: SingleChildScrollView(
@@ -196,7 +184,6 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
                     key: _formKey,
                     child: Column(
                       children: [
-                        // clean back button at the top
                         Row(
                           children: [
                             IconButton(
@@ -209,16 +196,12 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
                             ),
                           ],
                         ),
-                        
-                        // app logo
                         Image.asset(
                           'assets/app.png',
                           width: 80,
                           height: 80,
                         ),
                         const SizedBox(height: 16),
-                        
-                        // welcome message
                         const Text(
                           "Join as Artist",
                           style: TextStyle(
@@ -236,8 +219,6 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
                           ),
                         ),
                         const SizedBox(height: 32),
-
-                        // form fields in two columns for better layout
                         Row(
                           children: [
                             Expanded(
@@ -252,7 +233,6 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
                         _buildTextField(usernameController, "Username"),
                         _buildTextField(emailController, "Email", isEmail: true),
                         _buildTextField(passwordController, "Password", isPassword: true),
-                        // Password requirements hint
                         Padding(
                           padding: const EdgeInsets.only(left: 12, bottom: 8),
                           child: Text(
@@ -265,10 +245,7 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
                         ),
                         _buildTextField(stageNameController, "Stage Name"),
                         _buildTextField(bioController, "Bio", maxLines: 3),
-                        
                         const SizedBox(height: 24),
-
-                        // register button
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 240),
                           child: SizedBox(
@@ -296,10 +273,7 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 16),
-
-                        // login link
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -328,7 +302,6 @@ class _ArtistSignupScreenState extends State<ArtistSignupScreen> with TickerProv
     );
   }
 
-  // creates a styled text field
   Widget _buildTextField(
       TextEditingController controller,
       String label, {

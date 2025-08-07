@@ -1,34 +1,25 @@
 import 'package:flutter/material.dart';
-import '../widgets/details_panel.dart';
-import '../widgets/music_player.dart';
-import '../widgets/side_panel.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../services/auth_service.dart';
 
-// This is the main screen users see after they log in
-// It shows the music player and user info
-class UserDashboardScreen extends StatefulWidget {
-  const UserDashboardScreen({super.key});
+class UserDashboard extends StatefulWidget {
+  const UserDashboard({super.key});
 
   @override
-  State<UserDashboardScreen> createState() => _UserDashboardScreenState();
+  State<UserDashboard> createState() => _UserDashboardState();
 }
 
-class _UserDashboardScreenState extends State<UserDashboardScreen> with TickerProviderStateMixin {
-  // This holds the user's info like their name and email
+class _UserDashboardState extends State<UserDashboard> with TickerProviderStateMixin {
   Map<String, dynamic>? _userInfo;
-  // This tells us if we're still loading the user's info
   bool _isLoading = true;
-  String? _alertMessage; // stores alert message to show
-  bool _isSuccessAlert = false; // whether it's a success or error alert
+  String? _errorMessage;
+  bool _isSuccessAlert = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  // This runs when the screen first loads
-  // It gets the user's info from the backend
   @override
   void initState() {
     super.initState();
-    _loadUserInfo();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -40,67 +31,7 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> with TickerPr
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-  }
-
-  // Gets the current user's info from the backend
-  // This shows their name in the top bar
-  Future<void> _loadUserInfo() async {
-    try {
-      final result = await AuthService.getCurrentUser();
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          if (result['success']) {
-            _userInfo = result['data'];
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  // shows beautiful alert at the top of the screen
-  void _showAlert(String message, bool isSuccess) {
-    setState(() {
-      _alertMessage = message;
-      _isSuccessAlert = isSuccess;
-    });
-    _animationController.forward();
-    
-    // auto-hide after 4 seconds
-    Future.delayed(const Duration(seconds: 4), () {
-      if (mounted) {
-        _animationController.reverse().then((_) {
-          setState(() {
-            _alertMessage = null;
-          });
-        });
-      }
-    });
-  }
-
-  // This logs the user out and takes them back to the welcome screen
-  Future<void> _logout() async {
-    try {
-      await AuthService.logout();
-      if (mounted) {
-        _showAlert("Logged out successfully", true);
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, '/');
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        _showAlert("Error logging out: $e", false);
-      }
-    }
+    _loadUserInfo();
   }
 
   @override
@@ -109,9 +40,58 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> with TickerPr
     super.dispose();
   }
 
-  // beautiful alert widget
+  Future<void> _loadUserInfo() async {
+    try {
+      final result = await AuthService.getCurrentUser();
+      if (mounted) {
+        setState(() {
+          _userInfo = result;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = "Failed to load user info: $e";
+          _isSuccessAlert = false;
+          _isLoading = false;
+        });
+        _animationController.forward();
+      }
+    }
+  }
+
+  void _showAlert(String message, bool isSuccess) {
+    setState(() {
+      _errorMessage = message;
+      _isSuccessAlert = isSuccess;
+    });
+    _animationController.forward();
+    
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) {
+        _animationController.reverse().then((_) {
+          setState(() {
+            _errorMessage = null;
+          });
+        });
+      }
+    });
+  }
+
+  Future<void> _logout() async {
+    try {
+      await AuthService.logout();
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/');
+      }
+    } catch (e) {
+      _showAlert("Logout failed: $e", false);
+    }
+  }
+
   Widget _buildAlert() {
-    if (_alertMessage == null) return const SizedBox.shrink();
+    if (_errorMessage == null) return const SizedBox.shrink();
     
     return FadeTransition(
       opacity: _fadeAnimation,
@@ -142,7 +122,7 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> with TickerPr
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                _alertMessage!,
+                _errorMessage!,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
@@ -154,7 +134,7 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> with TickerPr
               onPressed: () {
                 _animationController.reverse().then((_) {
                   setState(() {
-                    _alertMessage = null;
+                    _errorMessage = null;
                   });
                 });
               },
@@ -175,104 +155,293 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> with TickerPr
     );
   }
 
+  String _getUserRole() {
+    return _userInfo?['role'] ?? 'listener';
+  }
+
+  bool _isAdmin() {
+    return _getUserRole() == 'admin';
+  }
+
+  bool _isMusician() {
+    return _getUserRole() == 'musician';
+  }
+
+  Widget _buildAdminDashboard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Admin Dashboard",
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFdfe8f0),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          "Manage users, content, and system settings",
+          style: TextStyle(
+            color: Color(0xFF83bef2),
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 32),
+        _buildActionCard(
+          "User Management",
+          "Manage all users, roles, and permissions",
+          Icons.people,
+          () => _showAlert("User management coming soon!", true),
+        ),
+        _buildActionCard(
+          "Content Moderation",
+          "Review and moderate music content",
+          Icons.music_note,
+          () => _showAlert("Content moderation coming soon!", true),
+        ),
+        _buildActionCard(
+          "System Analytics",
+          "View platform statistics and insights",
+          Icons.analytics,
+          () => _showAlert("Analytics dashboard coming soon!", true),
+        ),
+        _buildActionCard(
+          "Settings",
+          "Configure system settings and preferences",
+          Icons.settings,
+          () => _showAlert("Settings panel coming soon!", true),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMusicianDashboard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Artist Dashboard",
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFdfe8f0),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          "Manage your music and connect with listeners",
+          style: TextStyle(
+            color: Color(0xFF83bef2),
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 32),
+        _buildActionCard(
+          "My Music",
+          "Upload and manage your tracks",
+          Icons.music_note,
+          () => _showAlert("Music management coming soon!", true),
+        ),
+        _buildActionCard(
+          "Analytics",
+          "View your music performance stats",
+          Icons.trending_up,
+          () => _showAlert("Artist analytics coming soon!", true),
+        ),
+        _buildActionCard(
+          "Fans",
+          "Connect with your listeners",
+          Icons.favorite,
+          () => _showAlert("Fan management coming soon!", true),
+        ),
+        _buildActionCard(
+          "Profile",
+          "Update your artist profile",
+          Icons.person,
+          () => _showAlert("Profile settings coming soon!", true),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildListenerDashboard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Welcome Back!",
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFdfe8f0),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          "Discover and enjoy your favorite music",
+          style: TextStyle(
+            color: Color(0xFF83bef2),
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 32),
+        _buildActionCard(
+          "Discover",
+          "Find new music and artists",
+          Icons.explore,
+          () => _showAlert("Music discovery coming soon!", true),
+        ),
+        _buildActionCard(
+          "My Playlists",
+          "Manage your music collections",
+          Icons.playlist_play,
+          () => _showAlert("Playlist management coming soon!", true),
+        ),
+        _buildActionCard(
+          "Following",
+          "Artists and friends you follow",
+          Icons.people,
+          () => _showAlert("Following list coming soon!", true),
+        ),
+        _buildActionCard(
+          "Profile",
+          "Update your profile settings",
+          Icons.person,
+          () => _showAlert("Profile settings coming soon!", true),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionCard(String title, String subtitle, IconData icon, VoidCallback onTap) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Card(
+        color: const Color(0xFF2c3e50),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF83bef2).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: const Color(0xFF83bef2),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFdfe8f0),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: Color(0xFF83bef2),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Color(0xFF83bef2),
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF212529),
       body: Column(
         children: [
-          // alert at the top
           _buildAlert(),
-          
-          // The top bar with the app logo and user info
-          Container(
-            color: const Color(0xFF1c1f22),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                // Show the app logo and name on the left
-                Row(
-                  children: [
-                    Image.asset('assets/app.png', width: 40, height: 40),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "M Player",
-                      style: TextStyle(
-                        color: Color(0xFFdfe8f0),
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+          Expanded(
+            child: _isLoading
+                ? const Center(
+                    child: SpinKitCircle(
+                      color: Color(0xFF83bef2),
+                      size: 50,
                     ),
-                  ],
-                ),
-                const Spacer(),
-
-                // Show the user's profile picture and name on the right
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundImage: AssetImage('assets/user.png'),
-                    ),
-                    const SizedBox(width: 8),
-                    // Show a loading spinner while getting user info, or their name
-                    _isLoading
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFF83bef2),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Hello, ${_userInfo?['first_name'] ?? 'User'}!",
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFdfe8f0),
+                                    ),
+                                  ),
+                                  Text(
+                                    "@${_userInfo?['username'] ?? 'username'}",
+                                    style: const TextStyle(
+                                      color: Color(0xFF83bef2),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          )
-                        : Text(
-                            "Welcome, ${_userInfo?['username'] ?? 'User'}",
-                            style: const TextStyle(
-                              color: Color(0xFFdfe8f0),
-                              fontSize: 16,
+                            IconButton(
+                              onPressed: _logout,
+                              icon: const Icon(
+                                Icons.logout,
+                                color: Color(0xFF83bef2),
+                                size: 24,
+                              ),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: _isAdmin()
+                                ? _buildAdminDashboard()
+                                : _isMusician()
+                                    ? _buildMusicianDashboard()
+                                    : _buildListenerDashboard(),
                           ),
-                    const SizedBox(width: 16),
-                    // The logout button
-                    IconButton(
-                      onPressed: _logout,
-                      icon: const Icon(
-                        Icons.logout,
-                        color: Color(0xFF83bef2),
-                      ),
-                      tooltip: 'Logout',
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // The main content area with the music player
-          Expanded(
-            child: Row(
-              children: [
-                // The side panel on the left (25% of screen)
-                const Expanded(
-                  flex: 1,
-                  child: SidePanel(),
-                ),
-
-                // The main music player in the middle (50% of screen)
-                const Expanded(
-                  flex: 2,
-                  child: MusicPlayer(),
-                ),
-
-                // The details panel on the right (25% of screen)
-                const Expanded(
-                  flex: 1,
-                  child: DetailsPanel(),
-                ),
-              ],
-            ),
+                  ),
           ),
         ],
       ),

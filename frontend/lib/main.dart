@@ -1,9 +1,6 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'package:music_app/screens/artist_signup_screen.dart';
 import 'package:music_app/screens/register_screen.dart';
-import 'package:music_app/screens/user_dashboard.dart';
 import 'package:music_app/screens/welcome_screen.dart';
 
 
@@ -30,10 +27,9 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const WelcomeScreen(),
-        '/login': (context) => const WelcomeScreen(), // same as welcome screen
+        '/login': (context) => const WelcomeScreen(),
         '/register': (context) => const RegisterScreen(),
         '/artist-signup': (context) => const ArtistSignupScreen(),
-        '/dashboard': (context) => const UserDashboardScreen(),
       },
     );
   }
