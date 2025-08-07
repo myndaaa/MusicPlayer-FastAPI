@@ -37,7 +37,8 @@ def create_artist(db: Session, artist_data: ArtistCreate, user_id: int) -> Artis
     )
     
     db.add(artist)
-    db.flush()  
+    db.flush()
+    db.refresh(artist)
     return artist
 
 
@@ -72,7 +73,9 @@ def create_artist_with_user(db: Session, artist_signup_data: ArtistSignup) -> Tu
     )
     
     db.add(user)
-    db.flush()  
+    db.flush()
+    db.refresh(user)
+    
 
     artist = create_artist(db, ArtistCreate(
         artist_stage_name=artist_signup_data.artist_stage_name,
@@ -188,6 +191,7 @@ def update_artist(db: Session, artist_id: int, data: ArtistUpdate) -> Optional[A
     
     db.add(artist)
     db.flush()
+    db.refresh(artist)
     return artist
 
 
@@ -223,6 +227,7 @@ def disable_artist(db: Session, artist_id: int) -> bool:
     artist.disabled_at = datetime.now(timezone.utc)
     db.add(artist)
     db.flush()
+    db.refresh(artist)
     return True
 
 
@@ -243,6 +248,7 @@ def enable_artist(db: Session, artist_id: int) -> bool:
     artist.disabled_at = None
     db.add(artist)
     db.flush()
+    db.refresh(artist)
     return True
 
 

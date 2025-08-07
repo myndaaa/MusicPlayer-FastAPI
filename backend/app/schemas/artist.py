@@ -41,12 +41,6 @@ class ArtistOut(ArtistBase):
 class ArtistInDB(ArtistOut):
     pass
 
-class ArtistSearch(BaseModel):
-    stage_name: Optional[str] = None
-    is_active: Optional[bool] = None
-    skip: int = 0
-    limit: int = 10
-
 class ArtistStats(BaseModel):
     total_artists: int
     active_artists: int
