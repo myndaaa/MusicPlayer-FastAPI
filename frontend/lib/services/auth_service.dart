@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // This service handles all the login/logout stuff and talks to backend
 class AuthService {
+
   static const String baseUrl = 'http://localhost:8000';
   
   // keeps tokens safe and encrypted on the phone
@@ -55,6 +56,44 @@ class AuthService {
       }
     } catch (e) {
       // Something went wrong with the network or the request
+      return {'success': false, 'error': 'Network error: $e'};
+    }
+  }
+
+  // Creates a new user account by sending registration data to backend
+  static Future<Map<String, dynamic>> register({
+    required String username,
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      // Send registration request to backend
+      final response = await http.post(
+        Uri.parse('$baseUrl/user/signup'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'username': username,
+          'first_name': firstName,
+          'last_name': lastName,
+          'email': email,
+          'password': password,
+        }),
+      );
+      
+      final data = jsonDecode(response.body);
+      
+      if (response.statusCode == 201) {
+        // Registration successful
+        return {'success': true, 'data': data};
+      } else {
+        // Registration failed
+        return {'success': false, 'error': data['detail'] ?? 'Registration failed'};
+      }
+    } catch (e) {
       return {'success': false, 'error': 'Network error: $e'};
     }
   }

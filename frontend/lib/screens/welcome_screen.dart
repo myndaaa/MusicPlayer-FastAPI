@@ -216,7 +216,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/register');
+                      Navigator.pushReplacementNamed(context, '/register');
                     },
                     child: const Text(
                       "Sign up",
@@ -231,7 +231,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               // Link to sign up as an artist
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/artist-signup');
+                  Navigator.pushReplacementNamed(context, '/artist-signup');
                 },
                 child: const Text(
                   "Sign up as an Artist",
