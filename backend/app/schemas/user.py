@@ -14,21 +14,18 @@ class UserRole(str, enum.Enum):
 ShortStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
 PasswordStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=8, max_length=255)]
 
-# Password validation mixin for reusability
-class PasswordValidatorMixin:
-    @field_validator("password")
-    @classmethod
-    def password_strength(cls, value: str) -> str:
-        """
-        Enforces strong password: One uppercase, one lowercase, one special char
-        """
-        if not re.search(r"[A-Z]", value):
-            raise ValueError("Password must include at least one uppercase letter.")
-        if not re.search(r"[a-z]", value):
-            raise ValueError("Password must include at least one lowercase letter.")
-        if not re.search(r"[\W_]", value):
-            raise ValueError("Password must include at least one special character.")
-        return value
+# Password validation function for reusability
+def validate_password_strength(value: str) -> str:
+    """
+    Enforces strong password: One uppercase, one lowercase, one special char
+    """
+    if not re.search(r"[A-Z]", value):
+        raise ValueError("Password must include at least one uppercase letter.")
+    if not re.search(r"[a-z]", value):
+        raise ValueError("Password must include at least one lowercase letter.")
+    if not re.search(r"[\W_]", value):
+        raise ValueError("Password must include at least one special character.")
+    return value
 
 # Core UserBase - most reusable, contains only essential user fields
 class UserBase(BaseModel):
@@ -49,12 +46,22 @@ class UserBaseWithRole(UserBase):
         use_enum_values = True  # Ensures role = "admin", not UserRole.admin
 
 # UserBase with password - for signup/creation
-class UserBaseWithPassword(UserBase, PasswordValidatorMixin):
+class UserBaseWithPassword(UserBase):
     password: PasswordStr
 
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, value: str) -> str:
+        return validate_password_strength(value)
+
 # UserBase with role and password - for admin creation
-class UserBaseWithRoleAndPassword(UserBaseWithRole, PasswordValidatorMixin):
+class UserBaseWithRoleAndPassword(UserBaseWithRole):
     password: PasswordStr
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, value: str) -> str:
+        return validate_password_strength(value)
 
 # Signup schema - no role specified (defaults to listener)
 class UserSignup(UserBaseWithPassword):
@@ -75,9 +82,14 @@ class UserUpdate(UserBase):
         from_attributes = True
 
 # Password update schema
-class UserPasswordUpdate(BaseModel, PasswordValidatorMixin):
+class UserPasswordUpdate(BaseModel):
     old_password: str
     new_password: PasswordStr
+
+    @field_validator("new_password")
+    @classmethod
+    def password_strength(cls, value: str) -> str:
+        return validate_password_strength(value)
 
 # Login schema
 class UserLogin(BaseModel):
@@ -94,11 +106,11 @@ class UserOut(UserBaseWithRole):
         from_attributes = True
         use_enum_values = True  # Ensures JSON contains string values for enums
 
-# Database schema includes hashed password
+# Database schema - includes hashed password
 class UserInDB(UserOut):
     password: str  # hashed
 
-# Status schema for user status information
+# Status schema - for user status information
 class UserStatus(BaseModel):
     is_active: bool
     disabled_at: Optional[datetime]
