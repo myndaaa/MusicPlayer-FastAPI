@@ -58,9 +58,9 @@ The docker-compose.yml uses the `.env` file from the backend directory:
 
 - `POSTGRES_DB=music_stream`
 - `POSTGRES_USER=mynda`
-- `POSTGRES_PASSWORD=dev`
-- `JWT_SECRET_KEY=4-RX58-q787gFuNLuTUxsGjWXstRZxD9IBcqak7b0zw`
-- `PASSWORD_PEPPER=KuR0m1`
+- `POSTGRES_PASSWORD=dev` [not real]
+- `JWT_SECRET_KEY=4-RX58-q787gFuNLuTUxsGjWXstRZxD9IBcqak7b0zw` [not real]
+- `PASSWORD_PEPPER=KuR0m1` [ not real]
 
 ## 📊 Monitoring
 
