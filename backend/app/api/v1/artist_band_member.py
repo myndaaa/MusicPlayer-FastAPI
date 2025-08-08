@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.api.v1.deps import get_db, get_current_musician, get_current_admin
+from core.deps import get_db, get_current_musician, get_current_admin
 from app.crud.artist_band_member import (
     create_artist_band_member,
     get_artist_band_member_by_id,

@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.api.v1.deps import get_current_admin
+from core.deps import get_current_admin
 from app.schemas.genre import GenreCreate, GenreUpdate, GenreOut, GenreStats
 from app.crud.genre import (
     create_genre, get_genre_by_id, get_genre_by_name, get_all_genres,
