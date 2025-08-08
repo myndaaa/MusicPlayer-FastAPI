@@ -33,6 +33,7 @@ app.add_exception_handler(JWTDecodeError, jwt_decode_exception_handler)
 from app.api.v1.auth import router as auth_router
 from app.api.v1.user import router as user_router
 from app.api.v1.artist import router as artist_router
+from app.api.v1.band import router as band_router
 
 # Include routers with proper prefixes and tags
 app.include_router(
@@ -55,6 +56,16 @@ app.include_router(
         401: {"description": "Unauthorized"},
         403: {"description": "Forbidden - Insufficient permissions"},
         404: {"description": "Artist not found"},
+        409: {"description": "Conflict - Resource already exists"}
+    }
+)
+
+app.include_router(
+    band_router, tags=["bands"], prefix="/band",
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden - Insufficient permissions"},
+        404: {"description": "Band not found"},
         409: {"description": "Conflict - Resource already exists"}
     }
 )
@@ -95,6 +106,7 @@ async def root():
             "authentication": "/auth",
             "users": "/user",
             "artists": "/artist",
+            "bands": "/band",
             "health": "/health"
         }
     }
