@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel, Field, ConfigDict
 
 
@@ -45,7 +45,10 @@ class RefreshToken(BaseModel):
     user_id: str  # matches sub field from JWT
     expires_at: datetime
     is_revoked: bool = False
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    is_rotated: bool = False  # New field for rotation tracking
+    rotated_at: Optional[datetime] = None  # When token was rotated
+    previous_token_id: Optional[int] = None  # Link to previous token in rotation chain
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -88,4 +91,13 @@ class TokenRevoke(BaseModel):
     """Schema for revoking refresh tokens"""
     refresh_token: str
     user_id: str
+
+
+class RefreshTokenResponse(BaseModel):
+    """Response schema for refresh token operations with rotation info"""
+    refresh_token: str
+    is_new_token: bool = False  # Indicates if this is a newly rotated token
+    previous_token_id: Optional[int] = None  # ID of the previous token if rotated
+
+    model_config = ConfigDict(from_attributes=True)
 

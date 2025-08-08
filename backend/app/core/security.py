@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from argon2 import PasswordHasher, exceptions as argon2_exceptions
-from jwt import jwt
+import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError
 from app.core.custom_exception import JWTExpiredError, JWTDecodeError
 from app.core.config import settings
@@ -63,11 +63,12 @@ def create_access_token(subject: str, username: str, email: str, role: str, expi
     Returns:
     - Signed JWT token string
     """
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    now = datetime.now(timezone.utc)
+    expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     payload = {
         "sub": subject, # token subject, user_id
-        "exp": expire, # token expiry
-        "iat": datetime.now(timezone.utc), # issued at timestamp
+        "exp": int(expire.timestamp()), # Unix timestamp for consistency
+        "iat": int(now.timestamp()), # Unix timestamp for consistency
         "type": "access", # distinguish between access and refresh
         "username": username,
         "email": email,
@@ -89,11 +90,12 @@ def create_refresh_token(subject: str, expires_delta: Optional[timedelta] = None
     Returns:
     - Signed JWT refresh token string
     """
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES))
+    now = datetime.now(timezone.utc)
+    expire = now + (expires_delta or timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES))
     payload = {
         "sub": subject,
-        "exp": expire,
-        "iat": datetime.now(timezone.utc),
+        "exp": int(expire.timestamp()), # Unix timestamp for consistency
+        "iat": int(now.timestamp()), # Unix timestamp for consistency
         "type": "refresh", # marks this token as a refresh token
     }
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)

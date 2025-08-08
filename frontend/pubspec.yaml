@@ -1,0 +1,47 @@
+name: music_app
+description: "A new Flutter project."
+
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # http client for api calls
+  http: ^1.1.0
+  
+  # local storage for tokens
+  shared_preferences: ^2.2.2
+  
+  # form validation
+  form_validator: ^2.1.1
+  
+  # loading indicators
+  flutter_spinkit: ^5.2.0
+  
+  # toast messages
+  fluttertoast: ^8.2.4
+  
+  # secure storage for sensitive data
+  flutter_secure_storage: ^9.0.0
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/app.png
+    - assets/user.png
+
+

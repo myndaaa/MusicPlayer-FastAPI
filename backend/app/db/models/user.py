@@ -39,7 +39,7 @@ class User(Base):
     # History entries
     history = relationship("History", back_populates="user", lazy="select", cascade="all, delete-orphan")
     # Likes given by the user
-    likes = relationship("Likes", back_populates="user", lazy="select", cascade="all, delete-orphan")
+    likes = relationship("Like", back_populates="user", lazy="select", cascade="all, delete-orphan")
     # Playlists owned by the user
     playlists = relationship("Playlist", back_populates="owner", lazy="select")
     # Playlist Collaborations where user is collaborator
