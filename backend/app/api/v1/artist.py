@@ -95,6 +95,23 @@ async def get_artists_public(
     return artists
 
 
+@router.get("/followed", response_model=List[ArtistOut])
+async def get_followed_artists(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    db: Session = Depends(get_db),
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of records to return")
+):
+    """
+    Get artists that the current user follows.
+    Returns paginated list of artists that the authenticated user follows.
+    Requires authentication.
+    Returns: 200 OK - List of followed artists
+    """
+    followed_artists = get_artists_followed_by_user(db, current_user.id, skip=skip, limit=limit)
+    return followed_artists
+
+
 @router.get("/{artist_id}", response_model=ArtistOut)
 async def get_artist_public(
     artist_id: int,
@@ -260,23 +277,6 @@ async def get_current_artist_followers(
     
     # TODO: in following crud, then update here to return followers
     return []
-
-
-@router.get("/followed", response_model=List[ArtistOut])
-async def get_followed_artists(
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    db: Session = Depends(get_db),
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(20, ge=1, le=100, description="Maximum number of records to return")
-):
-    """
-    Get artists that the current user follows.
-    Returns paginated list of artists that the authenticated user follows.
-    Requires authentication.
-    Returns: 200 OK - List of followed artists
-    """
-    followed_artists = get_artists_followed_by_user(db, current_user.id, skip=skip, limit=limit)
-    return followed_artists
 
 
 @router.post("/", response_model=ArtistOut, status_code=status.HTTP_201_CREATED)
