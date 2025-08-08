@@ -5,6 +5,8 @@ services:
     image: postgres:15
     container_name: music-db-1
     restart: unless-stopped
+    env_file:
+      - ../.env
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
