@@ -52,16 +52,6 @@ docker-compose down -v
 - **Health**: http://localhost:8000/health
 - **Database**: localhost:5432
 
-## 🔧 Environment Variables
-
-The docker-compose.yml uses the `.env` file from the backend directory:
-
-- `POSTGRES_DB=music_stream`
-- `POSTGRES_USER=mynda`
-- `POSTGRES_PASSWORD=dev`
-- `JWT_SECRET_KEY=4-RX58-q787gFuNLuTUxsGjWXstRZxD9IBcqak7b0zw`
-- `PASSWORD_PEPPER=KuR0m1`
-
 ## 📊 Monitoring
 
 ```bash
@@ -81,17 +71,10 @@ For development with hot reload:
 
 ```bash
 # The app directory is mounted as a volume
-# Changes to your code will automatically reload
 docker-compose up --build
 ```
 
-## 🗄️ Database
 
-- **Database**: PostgreSQL 15
-- **Name**: music_stream
-- **User**: mynda
-- **Password**: dev
-- **Port**: 5432
 
 ## 🔍 Troubleshooting
 
@@ -107,11 +90,11 @@ docker-compose up --build
 docker-compose exec web poetry run python -c "
 import psycopg2
 conn = psycopg2.connect(
-    dbname='music_stream',
-    user='mynda',
-    password='dev',
-    host='db',
-    port='5432'
+    dbname='',
+    user='',
+    password='',
+    host='',
+    port=''
 )
 print('Database connection successful!')
 conn.close()
