@@ -119,6 +119,9 @@ async def get_current_user_info(
     """
     return current_user
 
+'''
+
+TODO: use cron job -- refer to issues for assistance
 
 @router.post("/cleanup-expired")
 async def cleanup_expired_tokens(
@@ -136,3 +139,4 @@ async def cleanup_expired_tokens(
         "message": f"Cleaned up {cleaned_count} expired tokens",
         "tokens_removed": cleaned_count
     }
+'''
