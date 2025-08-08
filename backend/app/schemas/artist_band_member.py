@@ -25,42 +25,11 @@ class ArtistBandMemberCreate(ArtistBandMemberBase):
     pass
 
 
-class ArtistBandMemberUpdate(BaseModel):
-    left_at: Optional[datetime] = None
-    is_current_member: Optional[bool] = None
-
-    class Config:
-        from_attributes = True
-
-
 class ArtistBandMemberOut(ArtistBandMemberBase):
     band_member_id: int
 
     class Config:
         from_attributes = True
-
-
-class ArtistMinimal(BaseModel):
-    id: int
-    artist_stage_name: str
-    artist_profile_image: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
-
-class BandMinimal(BaseModel):
-    id: int
-    name: str
-    profile_picture: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
-
-class ArtistBandMemberWithRelations(ArtistBandMemberOut):
-    artist: ArtistMinimal
-    band: BandMinimal
 
 
 class ArtistBandMemberJoin(BaseModel):
@@ -92,6 +61,4 @@ class ArtistBandMemberStats(BaseModel):
     total_memberships: int
     current_memberships: int
     former_memberships: int
-    average_membership_duration: float
-    longest_membership: Optional[ArtistBandMemberWithRelations] = None
-    shortest_membership: Optional[ArtistBandMemberWithRelations] = None 
+    average_membership_duration: float 

@@ -26,7 +26,8 @@ def create_band(db: Session, band_data: BandCreate, created_by_user_id: int) -> 
         bio=band_data.bio,
         profile_picture=band_data.profile_picture,
         social_link=band_data.social_link,
-        created_at=datetime.now(timezone.utc)
+        created_at=datetime.now(timezone.utc),
+        created_by_user_id=created_by_user_id
     )
     
     db.add(band)
@@ -258,3 +259,11 @@ def get_band_statistics(db: Session) -> dict:
         "active_bands": active_bands,
         "disabled_bands": disabled_bands
     }
+
+
+def is_band_owner(db: Session, band_id: int, user_id: int) -> bool:
+    """Check if a user is the owner of a band"""
+    band = db.query(Band).filter(Band.id == band_id).first()
+    if not band:
+        return False
+    return band.created_by_user_id == user_id
