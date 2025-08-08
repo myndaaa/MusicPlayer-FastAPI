@@ -18,7 +18,7 @@ from app.crud.user import (
     bulk_update_user_status, get_user_count_by_role, get_active_user_count,
     
 )
-from core.deps import (
+from app.core.deps import (
     get_current_active_user, get_current_admin
 )
 

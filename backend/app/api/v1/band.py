@@ -13,7 +13,7 @@ from app.crud.band import (
     get_active_bands, search_bands_by_name, update_band,
     disable_band, enable_band, delete_band_permanently, get_band_statistics
 )
-from core.deps import (
+from app.core.deps import (
     get_current_active_user, get_current_admin, get_current_musician
 )
 

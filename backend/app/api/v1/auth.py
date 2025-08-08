@@ -6,7 +6,7 @@ from app.db.models.user import User
 from app.schemas.user import UserLogin, UserOut
 from app.schemas.token import TokenResponse, TokenRefresh
 from app.services.auth import AuthService
-from app.api.v1.deps import get_current_active_user, get_current_admin, get_auth_service
+from app.core.deps import get_current_active_user, get_current_admin, get_auth_service
 
 router = APIRouter()
 

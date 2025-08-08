@@ -17,7 +17,7 @@ from app.crud.artist import (
     get_artist_with_related_entities, get_artists_followed_by_user, 
     get_artist_statistics
 )
-from core.deps import (
+from app.core.deps import (
     get_current_active_user, get_current_admin, get_current_musician
 )
 
