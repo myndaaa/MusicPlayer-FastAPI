@@ -18,8 +18,8 @@ from app.crud.user import (
     bulk_update_user_status, get_user_count_by_role, get_active_user_count,
     
 )
-from app.api.v1.deps import (
-    get_current_active_user, get_current_admin, get_current_user_optional
+from app.core.deps import (
+    get_current_active_user, get_current_admin
 )
 
 router = APIRouter()

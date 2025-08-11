@@ -32,21 +32,26 @@ app.add_exception_handler(JWTDecodeError, jwt_decode_exception_handler)
 # Import routers
 from app.api.v1.auth import router as auth_router
 from app.api.v1.user import router as user_router
+from app.api.v1.artist import router as artist_router
+from app.api.v1.band import router as band_router
+from app.api.v1.artist_band_member import router as artist_band_member_router
+from app.api.v1.genre import router as genre_router
+from app.api.v1.song import router as song_router
+from app.api.v1.like import router as like_router
+from app.api.v1.following import router as following_router
+from app.api.v1.history import router as history_router
 
 # Include routers with proper prefixes and tags
-app.include_router(
-    auth_router, prefix="/auth", tags=["authentication"],
-    responses={401: {"description": "Unauthorized"}}
-)
-
-app.include_router(
-    user_router, tags=["users"], prefix="/user",
-    responses={
-        401: {"description": "Unauthorized"},
-        403: {"description": "Forbidden - Insufficient permissions"},
-        404: {"description": "User not found"}
-    }
-)
+app.include_router(auth_router, prefix="/auth", tags=["authentication"])
+app.include_router(user_router, tags=["users"], prefix="/user")
+app.include_router(artist_router, tags=["artists"], prefix="/artist")
+app.include_router(band_router, tags=["bands"], prefix="/band")
+app.include_router(artist_band_member_router, tags=["artist-band-members"], prefix="/artist-band-member")
+app.include_router(genre_router, tags=["genres"], prefix="/genre")
+app.include_router(song_router, tags=["songs"], prefix="/song")
+app.include_router(like_router, tags=["likes"], prefix="/like")
+app.include_router(following_router, tags=["following"], prefix="/following")
+app.include_router(history_router, tags=["history"], prefix="/history")
 
 # CORS configuration
 app.add_middleware(
@@ -82,7 +87,15 @@ async def root():
         "redoc": "/redoc",
         "endpoints": {
             "authentication": "/auth",
-            "users": "/users",
+            "users": "/user",
+            "artists": "/artist",
+            "bands": "/band",
+            "artist-band-members": "/artist-band-member",
+            "genres": "/genre",
+            "songs": "/song",
+            "likes": "/like",
+            "following": "/following",
+            "history": "/history",
             "health": "/health"
         }
     }

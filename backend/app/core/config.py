@@ -29,6 +29,27 @@ class Settings(BaseSettings):
     # Password pepper
     PASSWORD_PEPPER: str
 
+    # Test User Credentials (optional, only for development)
+    TEST_ADMIN_USERNAME: Optional[str] = None
+    TEST_ADMIN_EMAIL: Optional[str] = None
+    TEST_ADMIN_PASSWORD: Optional[str] = None
+    TEST_ADMIN_FIRST_NAME: Optional[str] = None
+    TEST_ADMIN_LAST_NAME: Optional[str] = None
+
+    TEST_MUSICIAN_USERNAME: Optional[str] = None
+    TEST_MUSICIAN_EMAIL: Optional[str] = None
+    TEST_MUSICIAN_PASSWORD: Optional[str] = None
+    TEST_MUSICIAN_FIRST_NAME: Optional[str] = None
+    TEST_MUSICIAN_LAST_NAME: Optional[str] = None
+    TEST_MUSICIAN_STAGE_NAME: Optional[str] = None
+    TEST_MUSICIAN_BIO: Optional[str] = None
+
+    TEST_LISTENER_USERNAME: Optional[str] = None
+    TEST_LISTENER_EMAIL: Optional[str] = None
+    TEST_LISTENER_PASSWORD: Optional[str] = None
+    TEST_LISTENER_FIRST_NAME: Optional[str] = None
+    TEST_LISTENER_LAST_NAME: Optional[str] = None
+
     @property
     def DATABASE_URL(self) -> PostgresDsn:
         return (
@@ -39,7 +60,8 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-        case_sensitive = False  
+        case_sensitive = False
+        extra = "allow" 
 
 settings = Settings()
 

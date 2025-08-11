@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Index
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Boolean, Index
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -10,6 +10,7 @@ class History(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     song_id = Column(Integer, ForeignKey("songs.id", ondelete="CASCADE"), nullable=False)
     played_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
+    is_cleared = Column(Boolean, default=False, nullable=False)
 
     # Relationships
     user = relationship("User", back_populates="history", lazy="select")
@@ -17,8 +18,9 @@ class History(Base):
 
     __table_args__ = (
         Index("idx_history_user_song", "user_id", "song_id"),
+        Index("idx_history_cleared", "is_cleared"),
     )
 
     def __repr__(self):
-        return f"<History id={self.id} user_id={self.user_id} song_id={self.song_id} played_at={self.played_at}>"
+        return f"<History id={self.id} user_id={self.user_id} song_id={self.song_id} played_at={self.played_at} is_cleared={self.is_cleared}>"
 

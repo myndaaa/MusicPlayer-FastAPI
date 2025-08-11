@@ -1,10 +1,10 @@
-from typing import Optional, List, Annotated
+from typing import Optional, List
 from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-# Base schema for like
 class LikeBase(BaseModel):
+    """Base schema for like operations"""
     user_id: int
     song_id: int
 
@@ -13,17 +13,12 @@ class LikeBase(BaseModel):
 
 
 class LikeCreate(LikeBase):
+    """Schema for creating a new like"""
     pass
 
 
-class LikeUpdate(BaseModel):
-    liked_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-
 class LikeOut(LikeBase):
+    """Schema for like output"""
     id: int
     liked_at: datetime
 
@@ -31,8 +26,8 @@ class LikeOut(LikeBase):
         from_attributes = True
 
 
-# Nested schemas for relationships
 class UserMinimal(BaseModel):
+    """Minimal user information for like relationships"""
     id: int
     username: str
     first_name: str
@@ -43,6 +38,7 @@ class UserMinimal(BaseModel):
 
 
 class SongMinimal(BaseModel):
+    """Minimal song information for like relationships"""
     id: int
     title: str
     song_duration: int
@@ -54,14 +50,8 @@ class SongMinimal(BaseModel):
         from_attributes = True
 
 
-# like output with relationships
-class LikeWithRelations(LikeOut):
-    user: UserMinimal
-    song: SongMinimal
-
-
-# List schemas for pagination
 class LikeList(BaseModel):
+    """Paginated list of likes"""
     likes: List[LikeOut]
     total: int
     page: int
@@ -69,47 +59,13 @@ class LikeList(BaseModel):
     total_pages: int
 
 
-class LikeListWithRelations(BaseModel):
-    likes: List[LikeWithRelations]
-    total: int
-    page: int
-    per_page: int
-    total_pages: int
-
-
-# Search and filter schemas
-class LikeFilter(BaseModel):
-    user_id: Optional[int] = None
-    song_id: Optional[int] = None
-    liked_at_from: Optional[datetime] = None
-    liked_at_to: Optional[datetime] = None
-
-
-class LikeSearch(BaseModel):
-    user_id: int
-    query: Optional[str] = None  # Search in song title, artist, or band name
-    limit: int = Field(default=50, ge=1, le=100)
-    offset: int = Field(default=0, ge=0)
-
-
-# Like management schemas
-class LikeAdd(BaseModel):
-    user_id: int
-    song_id: int
-
-
-class LikeRemove(BaseModel):
-    user_id: int
-    song_id: int
-
-
 class LikeToggle(BaseModel):
-    user_id: int
+    """Schema for toggling like status"""
     song_id: int
 
 
-# Like statistics
 class LikeStats(BaseModel):
+    """Like statistics"""
     total_likes: int
     unique_songs: int
     unique_users: int
@@ -118,8 +74,8 @@ class LikeStats(BaseModel):
     most_liked_genre: Optional[str] = None
 
 
-# User likes summary
 class UserLikesSummary(BaseModel):
+    """Summary of user's likes"""
     user_id: int
     total_likes: int
     liked_songs: List[SongMinimal]
@@ -127,24 +83,22 @@ class UserLikesSummary(BaseModel):
     favorite_genres: List[str]
 
 
-# Song likes summary
-class SongLikesSummary(BaseModel):
+class LikeWithSong(BaseModel):
+    """Like with full song details for Flutter widgets."""
+    id: int
+    user_id: int
     song_id: int
-    total_likes: int
-    liked_by_users: List[UserMinimal]
-    like_percentage: float  # Percentage of users who liked this song
+    liked_at: datetime
+    song: SongMinimal
+
+    class Config:
+        from_attributes = True
 
 
-# Like export schema
-class LikeExport(BaseModel):
-    user_id: int
-    format: str = "json"  # json, csv, etc.
-    include_song_details: bool = True
-
-
-# Like recommendations
-class LikeRecommendation(BaseModel):
-    user_id: int
-    recommended_songs: List[SongMinimal]
-    recommendation_reason: str  #  "Based on your likes", "Popular among similar users"
-    confidence_score: float  # 0.0 to 1.0 
+class LikeListWithSongs(BaseModel):
+    """Paginated list of likes with full song details."""
+    likes: List[LikeWithSong]
+    total: int
+    page: int
+    per_page: int
+    total_pages: int 
