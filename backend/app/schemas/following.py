@@ -1,10 +1,10 @@
-from typing import Optional, List, Annotated
+from typing import Optional, List
 from datetime import datetime
 from pydantic import BaseModel, Field, model_validator
 
 
-# Base schema for following
 class FollowingBase(BaseModel):
+    """Base schema for following operations"""
     user_id: int
     artist_id: Optional[int] = None
     band_id: Optional[int] = None
@@ -23,17 +23,12 @@ class FollowingBase(BaseModel):
 
 
 class FollowingCreate(FollowingBase):
+    """Schema for creating a new following"""
     pass
 
 
-class FollowingUpdate(BaseModel):
-    started_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-
 class FollowingOut(FollowingBase):
+    """Schema for following output"""
     id: int
     started_at: datetime
 
@@ -41,18 +36,23 @@ class FollowingOut(FollowingBase):
         from_attributes = True
 
 
-# Schemas for relationships
-class UserMinimal(BaseModel):
-    id: int
-    username: str
-    first_name: str
-    last_name: str
+class FollowingToggle(BaseModel):
+    """Schema for toggling follow status"""
+    artist_id: Optional[int] = None
+    band_id: Optional[int] = None
 
-    class Config:
-        from_attributes = True
+    @model_validator(mode="after")
+    def validate_toggle_target(self) -> "FollowingToggle":
+        """Ensure either artist_id or band_id is provided, but not both"""
+        if self.artist_id is not None and self.band_id is not None:
+            raise ValueError("Cannot toggle both artist and band simultaneously")
+        if self.artist_id is None and self.band_id is None:
+            raise ValueError("Must specify either artist_id or band_id")
+        return self
 
 
 class ArtistMinimal(BaseModel):
+    """Minimal artist information for following relationships"""
     id: int
     artist_stage_name: str
     artist_profile_image: Optional[str] = None
@@ -62,6 +62,7 @@ class ArtistMinimal(BaseModel):
 
 
 class BandMinimal(BaseModel):
+    """Minimal band information for following relationships"""
     id: int
     name: str
     profile_picture: Optional[str] = None
@@ -70,151 +71,42 @@ class BandMinimal(BaseModel):
         from_attributes = True
 
 
-# Following output with relationships
-class FollowingWithRelations(FollowingOut):
-    user: UserMinimal
+class FollowingWithTarget(BaseModel):
+    """Following with target details (artist or band)"""
+    id: int
+    user_id: int
+    started_at: datetime
     artist: Optional[ArtistMinimal] = None
     band: Optional[BandMinimal] = None
 
-
-# User following list
-class UserFollowingList(BaseModel):
-    user_id: int
-    following: List[FollowingWithRelations]
-    following_artists: List[ArtistMinimal]
-    following_bands: List[BandMinimal]
-    total_following: int
-    artist_count: int
-    band_count: int
+    class Config:
+        from_attributes = True
 
 
-# Artist followers list
-class ArtistFollowersList(BaseModel):
-    artist_id: int
-    followers: List[UserMinimal]
-    total_followers: int
-
-
-# Band followers list
-class BandFollowersList(BaseModel):
-    band_id: int
-    followers: List[UserMinimal]
-    total_followers: int
-
-
-# List schemas for pagination
 class FollowingList(BaseModel):
-    followings: List[FollowingOut]
+    """Paginated list of followings"""
+    followings: List[FollowingWithTarget]
     total: int
     page: int
     per_page: int
     total_pages: int
 
 
-class FollowingListWithRelations(BaseModel):
-    followings: List[FollowingWithRelations]
-    total: int
-    page: int
-    per_page: int
-    total_pages: int
-
-
-# Search and filter schemas
-class FollowingFilter(BaseModel):
-    user_id: Optional[int] = None
-    artist_id: Optional[int] = None
-    band_id: Optional[int] = None
-    started_at_from: Optional[datetime] = None
-    started_at_to: Optional[datetime] = None
-
-
-class FollowingSearch(BaseModel):
-    user_id: int
-    query: Optional[str] = None  # Search in artist/band names
-    follow_type: Optional[str] = None  # "artist", "band", or None for both
-    limit: int = Field(default=50, ge=1, le=100)
-    offset: int = Field(default=0, ge=0)
-
-
-# Following management schemas
-class FollowingAdd(BaseModel):
-    user_id: int
-    artist_id: Optional[int] = None
-    band_id: Optional[int] = None
-
-
-class FollowingRemove(BaseModel):
-    user_id: int
-    artist_id: Optional[int] = None
-    band_id: Optional[int] = None
-
-
-class FollowingToggle(BaseModel):
-    user_id: int
-    artist_id: Optional[int] = None
-    band_id: Optional[int] = None
-
-
-# Following statistics
 class FollowingStats(BaseModel):
+    """Following statistics"""
     total_followings: int
     unique_users: int
     unique_artists: int
     unique_bands: int
     most_followed_artist: Optional[ArtistMinimal] = None
     most_followed_band: Optional[BandMinimal] = None
-    most_active_follower: Optional[UserMinimal] = None
 
 
-# User following statistics
-class UserFollowingStats(BaseModel):
+class UserFollowingSummary(BaseModel):
+    """User's following summary"""
     user_id: int
     total_following: int
     artist_count: int
     band_count: int
-    following_since: Optional[datetime] = None
-    most_recent_follow: Optional[datetime] = None
-
-
-# Artist/Band following statistics
-class ArtistBandFollowingStats(BaseModel):
-    artist_id: Optional[int] = None
-    band_id: Optional[int] = None
-    total_followers: int
-    followers_growth_rate: float  # followers per day
-    top_followers: List[UserMinimal]  # most active followers
-
-
-# Following recommendations
-class FollowingRecommendation(BaseModel):
-    user_id: int
-    recommended_artists: List[ArtistMinimal]
-    recommended_bands: List[BandMinimal]
-    recommendation_reason: str  # e.g., "Based on your listening history", "Popular among similar users"
-    confidence_score: float  # 0.0 to 1.0
-
-
-# Following activity
-class FollowingActivity(BaseModel):
-    user_id: int
-    activities: List[dict]  # Timeline of following activities
-    # [{"date": "2024-01-01", "action": "followed", "target": {...}}, ...]
-
-
-# Following export
-class FollowingExport(BaseModel):
-    user_id: Optional[int] = None
-    artist_id: Optional[int] = None
-    band_id: Optional[int] = None
-    format: str = "json"  # json, csv, etc.
-    include_details: bool = True
-
-
-# Following notifications
-class FollowingNotification(BaseModel):
-    user_id: int
-    target_id: int  # artist_id or band_id
-    target_type: str  # "artist" or "band"
-    notification_type: str  # "new_release", "new_song", "new_album", etc.
-    message: str
-    timestamp: datetime 
+    followed_artists: List[ArtistMinimal]
+    followed_bands: List[BandMinimal] 

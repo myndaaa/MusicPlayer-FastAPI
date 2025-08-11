@@ -38,6 +38,7 @@ from app.api.v1.artist_band_member import router as artist_band_member_router
 from app.api.v1.genre import router as genre_router
 from app.api.v1.song import router as song_router
 from app.api.v1.like import router as like_router
+from app.api.v1.following import router as following_router
 
 # Include routers with proper prefixes and tags
 app.include_router(auth_router, prefix="/auth", tags=["authentication"])
@@ -48,6 +49,7 @@ app.include_router(artist_band_member_router, tags=["artist-band-members"], pref
 app.include_router(genre_router, tags=["genres"], prefix="/genre")
 app.include_router(song_router, tags=["songs"], prefix="/song")
 app.include_router(like_router, tags=["likes"], prefix="/like")
+app.include_router(following_router, tags=["following"], prefix="/following")
 
 # CORS configuration
 app.add_middleware(
@@ -90,6 +92,7 @@ async def root():
             "genres": "/genre",
             "songs": "/song",
             "likes": "/like",
+            "following": "/following",
             "health": "/health"
         }
     }
