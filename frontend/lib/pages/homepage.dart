@@ -5,6 +5,8 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../services/auth_service.dart';
 import 'dashboard.dart';
+import 'user_signup.dart';
+import 'artist_signup.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -232,9 +234,13 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           Expanded(
                             child: CustomButton(
-                              text: 'Create Account',
+                              text: 'Sign Up',
                               onPressed: () {
-                                // TODO: Navigate to signup page
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const UserSignupPage(),
+                                  ),
+                                );
                               },
                               isOutlined: true,
                               height: 40,
@@ -244,9 +250,13 @@ class _HomePageState extends State<HomePage> {
                           const SizedBox(width: AppSizes.paddingMedium),
                           Expanded(
                             child: CustomButton(
-                              text: 'Artist Signup',
+                              text: 'Artist',
                               onPressed: () {
-                                // TODO: Navigate to artist signup page
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const ArtistSignupPage(),
+                                  ),
+                                );
                               },
                               isOutlined: true,
                               height: 40,

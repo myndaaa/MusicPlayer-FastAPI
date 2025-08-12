@@ -60,6 +60,122 @@ class AuthService {
     }
   }
 
+  Future<Map<String, dynamic>> userSignup({
+    required String username,
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await _apiService.post('/user/signup', data: {
+        'username': username,
+        'first_name': firstName,
+        'last_name': lastName,
+        'email': email,
+        'password': password,
+      });
+
+      if (response.statusCode == 201) {
+        return {
+          'success': true,
+          'message': 'Account created successfully! Please sign in.',
+        };
+      }
+      
+      return {
+        'success': false,
+        'error': 'Signup failed',
+      };
+    } on DioException catch (e) {
+      String errorMessage = 'Signup failed';
+      
+      if (e.response?.statusCode == 409) {
+        if (e.response?.data['detail']?.contains('Username') == true) {
+          errorMessage = 'Username already exists';
+        } else if (e.response?.data['detail']?.contains('Email') == true) {
+          errorMessage = 'Email already registered';
+        } else {
+          errorMessage = e.response!.data['detail'];
+        }
+      } else if (e.response?.data != null && e.response?.data['detail'] != null) {
+        errorMessage = e.response!.data['detail'];
+      }
+      
+      return {
+        'success': false,
+        'error': errorMessage,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error. Please try again.',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> artistSignup({
+    required String username,
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String stageName,
+    String? bio,
+    Map<String, dynamic>? socialLinks,
+  }) async {
+    try {
+      final response = await _apiService.post('/artist/signup', data: {
+        'username': username,
+        'first_name': firstName,
+        'last_name': lastName,
+        'email': email,
+        'password': password,
+        'artist_stage_name': stageName,
+        'artist_bio': bio,
+        'artist_social_link': socialLinks,
+      });
+
+      if (response.statusCode == 201) {
+        return {
+          'success': true,
+          'message': 'Artist account created successfully! Please sign in.',
+        };
+      }
+      
+      return {
+        'success': false,
+        'error': 'Signup failed',
+      };
+    } on DioException catch (e) {
+      String errorMessage = 'Signup failed';
+      
+      if (e.response?.statusCode == 409) {
+        if (e.response?.data['detail']?.contains('Username') == true) {
+          errorMessage = 'Username already exists';
+        } else if (e.response?.data['detail']?.contains('Email') == true) {
+          errorMessage = 'Email already registered';
+        } else if (e.response?.data['detail']?.contains('stage name') == true) {
+          errorMessage = 'Stage name already taken';
+        } else {
+          errorMessage = e.response!.data['detail'];
+        }
+      } else if (e.response?.data != null && e.response?.data['detail'] != null) {
+        errorMessage = e.response!.data['detail'];
+      }
+      
+      return {
+        'success': false,
+        'error': errorMessage,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error. Please try again.',
+      };
+    }
+  }
+
   Future<void> logout() async {
     try {
       final refreshToken = await _getRefreshToken();
