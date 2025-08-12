@@ -1,7 +1,9 @@
 from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, desc, and_
+import secrets
 from app.db.models.playlist import Playlist
+from app.db.models.playlist_collaborator import PlaylistCollaborator
 from app.db.models.user import User
 from app.schemas.playlist import PlaylistCreate, PlaylistUpdate, PlaylistStats
 
@@ -160,24 +162,45 @@ def delete_playlist(db: Session, playlist_id: int) -> bool:
 
 def user_can_edit_playlist(db: Session, user_id: int, playlist_id: int) -> bool:
     """
-    Check if user can edit a playlist (owner only for now)
+    Check if user can edit a playlist (owner or collaborator with can_edit=True)
     """
     playlist = get_playlist_by_id(db, playlist_id)
     if not playlist:
         return False
     
-    return playlist.owner_id == user_id
+    if playlist.owner_id == user_id:
+        return True
+
+    collaborator = db.query(PlaylistCollaborator).filter(
+        and_(
+            PlaylistCollaborator.playlist_id == playlist_id,
+            PlaylistCollaborator.collaborator_id == user_id,
+            PlaylistCollaborator.can_edit == True
+        )
+    ).first()
+    
+    return collaborator is not None
 
 
 def user_can_view_playlist(db: Session, user_id: int, playlist_id: int) -> bool:
     """
-    Check if user can view a playlist (owner only for now)
+    Check if user can view a playlist (owner or collaborator)
     """
     playlist = get_playlist_by_id(db, playlist_id)
     if not playlist:
         return False
     
-    return playlist.owner_id == user_id
+    if playlist.owner_id == user_id:
+        return True
+
+    collaborator = db.query(PlaylistCollaborator).filter(
+        and_(
+            PlaylistCollaborator.playlist_id == playlist_id,
+            PlaylistCollaborator.collaborator_id == user_id
+        )
+    ).first()
+    
+    return collaborator is not None
 
 
 def get_playlist_stats(db: Session, playlist_id: int) -> PlaylistStats:
@@ -193,7 +216,7 @@ def get_playlist_stats(db: Session, playlist_id: int) -> PlaylistStats:
         total_owned_playlists=1,
         total_collaborated_playlists=0,
         created_at=playlist.created_at,
-        last_modified=playlist.created_at  # TODO: Add last_modified field to model
+        last_modified=playlist.created_at  
     )
 
 
@@ -203,12 +226,46 @@ def get_user_playlist_stats(db: Session, user_id: int) -> PlaylistStats:
     """
     total_owned = db.query(Playlist).filter(Playlist.owner_id == user_id).count()
     
+    total_collaborated = db.query(PlaylistCollaborator).filter(
+        PlaylistCollaborator.collaborator_id == user_id
+    ).count()
+    
     return PlaylistStats(
-        total_playlists=total_owned,
+        total_playlists=total_owned + total_collaborated,
         total_owned_playlists=total_owned,
-        total_collaborated_playlists=0,
+        total_collaborated_playlists=total_collaborated,
         created_at=db.query(func.min(Playlist.created_at)).filter(Playlist.owner_id == user_id).scalar(),
         last_modified=db.query(func.max(Playlist.created_at)).filter(Playlist.owner_id == user_id).scalar()
     )
+# helpers
+def generate_share_token() -> str:
+    """
+    Generate a secure share token
+    """
+    return secrets.token_urlsafe(32)
+
+
+def generate_collaboration_link(db: Session, playlist_id: int) -> str:
+    """
+    Generate a collaboration link for a playlist
+    """
+    playlist = get_playlist_by_id(db, playlist_id)
+    if not playlist:
+        raise ValueError("Playlist not found")
+    
+    collaboration_token = generate_share_token()
+    
+    playlist.share_token = collaboration_token
+    playlist.allow_collaboration = True
+    db.commit()
+    
+    return f"http://localhost:8000/playlist/collaborate/{collaboration_token}"
+
+
+def access_playlist_by_token(db: Session, token: str) -> Optional[Playlist]:
+    """
+    Access a playlist using a share token
+    """
+    return db.query(Playlist).filter(Playlist.share_token == token).first()
 
 

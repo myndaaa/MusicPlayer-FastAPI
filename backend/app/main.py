@@ -42,6 +42,7 @@ from app.api.v1.following import router as following_router
 from app.api.v1.history import router as history_router
 from app.api.v1.playlist import router as playlist_router
 from app.api.v1.playlist_song import router as playlist_song_router
+from app.api.v1.playlist_collaborator import router as playlist_collaborator_router
 
 # Include routers with proper prefixes and tags
 app.include_router(auth_router, prefix="/auth", tags=["authentication"])
@@ -56,6 +57,7 @@ app.include_router(following_router, tags=["following"], prefix="/following")
 app.include_router(history_router, tags=["history"], prefix="/history")
 app.include_router(playlist_router, tags=["playlists"], prefix="/playlist")
 app.include_router(playlist_song_router, tags=["playlist-songs"], prefix="/playlist")
+app.include_router(playlist_collaborator_router, tags=["playlist-collaborators"], prefix="/playlist")
 
 # CORS configuration
 app.add_middleware(
