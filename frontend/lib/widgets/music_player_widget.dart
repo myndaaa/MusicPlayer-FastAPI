@@ -1,107 +1,223 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../services/song_service.dart';
+import 'dart:async';
 import '../constants/app_constants.dart';
+import '../services/song_service.dart';
 import 'custom_button.dart';
 
 class MusicPlayerWidget extends StatefulWidget {
   final Map<String, dynamic>? currentSong;
   final List<Map<String, dynamic>> playlist;
   final int currentIndex;
-  final Function(Map<String, dynamic>)? onSongChanged;
-  final VoidCallback? onPlayPause;
-  final VoidCallback? onNext;
-  final VoidCallback? onPrevious;
+  final Function(int)? onSongChanged;
+  final Function(bool)? onPlayPause;
   final bool isPlaying;
-  final Duration position;
-  final Duration duration;
+  final bool isMinimized;
 
   const MusicPlayerWidget({
     super.key,
     this.currentSong,
-    this.playlist = const [],
-    this.currentIndex = 0,
+    required this.playlist,
+    required this.currentIndex,
     this.onSongChanged,
     this.onPlayPause,
-    this.onNext,
-    this.onPrevious,
     this.isPlaying = false,
-    this.position = Duration.zero,
-    this.duration = Duration.zero,
+    this.isMinimized = false,
   });
 
   @override
   State<MusicPlayerWidget> createState() => _MusicPlayerWidgetState();
 }
 
-class _MusicPlayerWidgetState extends State<MusicPlayerWidget> {
-  final SongService _songService = SongService();
-  double _sliderValue = 0.0;
+class _MusicPlayerWidgetState extends State<MusicPlayerWidget>
+    with TickerProviderStateMixin {
+  late AnimationController _rotationController;
+  late AnimationController _pulseController;
+  Timer? _progressTimer;
+  double _currentProgress = 0.0;
+  double _totalDuration = 0.0;
   bool _isDragging = false;
+  bool _isFileMissing = false;
+  final SongService _songService = SongService();
 
   @override
   void initState() {
     super.initState();
-    _updateSliderValue();
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 10),
+      vsync: this,
+    );
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    if (widget.isPlaying) {
+      _startProgressTimer();
+      _rotationController.repeat();
+    }
   }
 
   @override
   void didUpdateWidget(MusicPlayerWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_isDragging) {
-      _updateSliderValue();
+    
+    if (widget.isPlaying != oldWidget.isPlaying) {
+      if (widget.isPlaying) {
+        _startProgressTimer();
+        _rotationController.repeat();
+      } else {
+        _stopProgressTimer();
+        _rotationController.stop();
+      }
+    }
+    
+    if (widget.currentSong != oldWidget.currentSong) {
+      _resetProgress();
+      _checkFileExists();
     }
   }
 
-  void _updateSliderValue() {
-    if (widget.duration.inMilliseconds > 0) {
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    _pulseController.dispose();
+    _stopProgressTimer();
+    super.dispose();
+  }
+
+  void _startProgressTimer() {
+    _progressTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (!_isDragging && widget.isPlaying) {
+        setState(() {
+          _currentProgress += 0.1;
+          if (_currentProgress >= _totalDuration) {
+            _currentProgress = _totalDuration;
+            _nextSong();
+          }
+        });
+      }
+    });
+  }
+
+  void _stopProgressTimer() {
+    _progressTimer?.cancel();
+    _progressTimer = null;
+  }
+
+  void _resetProgress() {
+    setState(() {
+      _currentProgress = 0.0;
+      _totalDuration = widget.currentSong?['song_duration']?.toDouble() ?? 0.0;
+    });
+  }
+
+  Future<void> _checkFileExists() async {
+    if (widget.currentSong != null) {
+      final songId = widget.currentSong!['id'];
+      final exists = await _songService.checkSongFileExists(songId);
       setState(() {
-        _sliderValue = widget.position.inMilliseconds / widget.duration.inMilliseconds;
+        _isFileMissing = !exists;
       });
     }
   }
 
-  void _onSliderChanged(double value) {
+  void _nextSong() {
+    if (widget.onSongChanged != null && widget.currentIndex < widget.playlist.length - 1) {
+      widget.onSongChanged!(widget.currentIndex + 1);
+    }
+  }
+
+  void _previousSong() {
+    if (widget.onSongChanged != null && widget.currentIndex > 0) {
+      widget.onSongChanged!(widget.currentIndex - 1);
+    }
+  }
+
+  void _togglePlayPause() {
+    if (_isFileMissing) {
+      _showFileMissingAlert();
+      return;
+    }
+    
+    if (widget.onPlayPause != null) {
+      widget.onPlayPause!(!widget.isPlaying);
+    }
+  }
+
+  void _showFileMissingAlert() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: AppColors.error,
+                size: 24,
+              ),
+              const SizedBox(width: AppSizes.paddingSmall),
+              Text(
+                'Song Unavailable',
+                style: AppTextStyles.heading2.copyWith(
+                  color: AppColors.error,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'This song\'s audio file is missing or unavailable.',
+            style: AppTextStyles.body1.copyWith(
+              color: AppColors.textPrimary,
+            ),
+          ),
+          actions: [
+            CustomButton(
+              text: 'OK',
+              onPressed: () => Navigator.of(context).pop(),
+              height: 40,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onProgressChanged(double value) {
     setState(() {
-      _sliderValue = value;
+      _currentProgress = value;
+    });
+  }
+
+  void _onProgressStart(double value) {
+    setState(() {
       _isDragging = true;
     });
   }
 
-  void _onSliderChangedEnd(double value) {
+  void _onProgressEnd(double value) {
     setState(() {
       _isDragging = false;
+      _currentProgress = value;
     });
-    // Here you would seek to the new position
-    // widget.onSeek?.call(Duration(milliseconds: (value * widget.duration.inMilliseconds).round()));
   }
 
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return '$minutes:$seconds';
+  String _formatDuration(double seconds) {
+    final minutes = (seconds / 60).floor();
+    final remainingSeconds = (seconds % 60).floor();
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
     if (widget.currentSong == null) {
-      return Container(
-        height: 100,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.2),
-          ),
-        ),
-        child: const Center(
-          child: Text(
-            'No song playing',
-            style: AppTextStyles.body2,
-          ),
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
     final song = widget.currentSong!;
@@ -110,165 +226,337 @@ class _MusicPlayerWidgetState extends State<MusicPlayerWidget> {
     final bandName = song['band_name'];
     final coverImage = song['cover_image'];
 
+    if (widget.isMinimized) {
+      return _buildMinimizedPlayer(song, title, artistName, bandName, coverImage);
+    }
+
+    return _buildFullPlayer(song, title, artistName, bandName, coverImage);
+  }
+
+  Widget _buildMinimizedPlayer(
+    Map<String, dynamic> song,
+    String title,
+    String? artistName,
+    String? bandName,
+    String? coverImage,
+  ) {
     return Container(
-      height: 120,
+      height: 80,
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+        gradient: AppGradients.cardGradient,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(AppSizes.radiusLarge),
+          topRight: Radius.circular(AppSizes.radiusLarge),
+        ),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
+          color: AppColors.primary.withValues(alpha: 0.3),
         ),
       ),
-      child: Column(
-        children: [
-          // Progress Bar
-          Container(
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.textSecondary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(2),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: _sliderValue,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: AppGradients.primaryGradient,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSizes.paddingMedium),
+        child: Row(
+          children: [
+            // Cover Image
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+                gradient: coverImage != null 
+                    ? null 
+                    : AppGradients.primaryGradient,
               ),
-            ),
-          ),
-          
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSizes.paddingMedium),
-              child: Row(
-                children: [
-                  // Cover Image
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
+              child: coverImage != null
+                  ? ClipRRect(
                       borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
-                      gradient: coverImage != null 
-                          ? null 
-                          : AppGradients.primaryGradient,
-                    ),
-                    child: coverImage != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
-                            child: Image.network(
-                              coverImage,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    gradient: AppGradients.primaryGradient,
-                                    borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
-                                  ),
-                                  child: const Icon(
-                                    Icons.music_note,
-                                    color: AppColors.textPrimary,
-                                    size: 24,
-                                  ),
-                                );
-                              },
+                      child: Image.network(
+                        coverImage,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              gradient: AppGradients.primaryGradient,
+                              borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
                             ),
-                          )
-                        : const Icon(
+                            child: const Icon(
+                              Icons.music_note,
+                              color: AppColors.textPrimary,
+                              size: 20,
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : AnimatedBuilder(
+                      animation: _rotationController,
+                      builder: (context, child) {
+                        return Transform.rotate(
+                          angle: _rotationController.value * 2 * 3.14159,
+                          child: const Icon(
                             Icons.music_note,
                             color: AppColors.textPrimary,
-                            size: 24,
+                            size: 20,
                           ),
-                  ),
-                  
-                  const SizedBox(width: AppSizes.paddingMedium),
-                  
-                  // Song Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          title,
-                          style: AppTextStyles.body1.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          artistName ?? bandName ?? 'Unknown Artist',
-                          style: AppTextStyles.body2.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${_formatDuration(widget.position)} / ${_formatDuration(widget.duration)}',
-                          style: AppTextStyles.body2.copyWith(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
+            ),
+            
+            const SizedBox(width: AppSizes.paddingMedium),
+            
+            // Song Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.body1.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  
-                  const SizedBox(width: AppSizes.paddingMedium),
-                  
-                  // Controls
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Previous Button
-                      IconButton(
-                        onPressed: widget.onPrevious,
-                        icon: const Icon(
-                          Icons.skip_previous,
-                          color: AppColors.textSecondary,
-                          size: 28,
+                  if (artistName != null || bandName != null)
+                    Text(
+                      artistName ?? bandName ?? '',
+                      style: AppTextStyles.body2.copyWith(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+            
+            // Controls
+            Row(
+              children: [
+                IconButton(
+                  onPressed: _previousSong,
+                  icon: const Icon(
+                    Icons.skip_previous,
+                    color: AppColors.primary,
+                    size: 24,
+                  ),
+                ),
+                AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: widget.isPlaying ? 1.0 + (_pulseController.value * 0.1) : 1.0,
+                      child: IconButton(
+                        onPressed: _togglePlayPause,
+                        icon: Icon(
+                          widget.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                          color: AppColors.primary,
+                          size: 40,
                         ),
                       ),
-                      
-                      // Play/Pause Button
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: AppGradients.primaryGradient,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          onPressed: widget.onPlayPause,
-                          icon: Icon(
-                            widget.isPlaying ? Icons.pause : Icons.play_arrow,
-                            color: AppColors.textPrimary,
-                            size: 32,
+                    );
+                  },
+                ),
+                IconButton(
+                  onPressed: _nextSong,
+                  icon: const Icon(
+                    Icons.skip_next,
+                    color: AppColors.primary,
+                    size: 24,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ).animate().slideY(begin: 1.0, end: 0.0).fadeIn();
+  }
+
+  Widget _buildFullPlayer(
+    Map<String, dynamic> song,
+    String title,
+    String? artistName,
+    String? bandName,
+    String? coverImage,
+  ) {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        gradient: AppGradients.cardGradient,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSizes.paddingLarge),
+        child: Column(
+          children: [
+            // Song Info Row
+            Row(
+              children: [
+                // Cover Image
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                    gradient: coverImage != null 
+                        ? null 
+                        : AppGradients.primaryGradient,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: coverImage != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                          child: Image.network(
+                            coverImage,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  gradient: AppGradients.primaryGradient,
+                                  borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                                ),
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: AppColors.textPrimary,
+                                  size: 32,
+                                ),
+                              );
+                            },
                           ),
+                        )
+                      : AnimatedBuilder(
+                          animation: _rotationController,
+                          builder: (context, child) {
+                            return Transform.rotate(
+                              angle: _rotationController.value * 2 * 3.14159,
+                              child: const Icon(
+                                Icons.music_note,
+                                color: AppColors.textPrimary,
+                                size: 32,
+                              ),
+                            );
+                          },
                         ),
+                ),
+                
+                const SizedBox(width: AppSizes.paddingLarge),
+                
+                // Song Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTextStyles.heading2.copyWith(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      
-                      // Next Button
-                      IconButton(
-                        onPressed: widget.onNext,
-                        icon: const Icon(
-                          Icons.skip_next,
+                      const SizedBox(height: AppSizes.paddingSmall),
+                      if (artistName != null || bandName != null)
+                        Text(
+                          artistName ?? bandName ?? '',
+                          style: AppTextStyles.body1.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      const SizedBox(height: AppSizes.paddingSmall),
+                      Text(
+                        '${_formatDuration(_currentProgress)} / ${_formatDuration(_totalDuration)}',
+                        style: AppTextStyles.body2.copyWith(
                           color: AppColors.textSecondary,
-                          size: 28,
+                          fontSize: 12,
                         ),
                       ),
                     ],
                   ),
-                ],
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: AppSizes.paddingLarge),
+            
+            // Progress Bar
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: AppColors.primary,
+                inactiveTrackColor: AppColors.primary.withValues(alpha: 0.2),
+                thumbColor: AppColors.primary,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                trackHeight: 4,
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              ),
+              child: Slider(
+                value: _currentProgress.clamp(0.0, _totalDuration),
+                max: _totalDuration,
+                onChanged: _onProgressChanged,
+                onChangeStart: _onProgressStart,
+                onChangeEnd: _onProgressEnd,
               ),
             ),
-          ),
-        ],
+            
+            const SizedBox(height: AppSizes.paddingMedium),
+            
+            // Controls
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: _previousSong,
+                  icon: const Icon(
+                    Icons.skip_previous,
+                    color: AppColors.primary,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(width: AppSizes.paddingMedium),
+                AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: widget.isPlaying ? 1.0 + (_pulseController.value * 0.1) : 1.0,
+                      child: IconButton(
+                        onPressed: _togglePlayPause,
+                        icon: Icon(
+                          widget.isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                          color: AppColors.primary,
+                          size: 60,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: AppSizes.paddingMedium),
+                IconButton(
+                  onPressed: _nextSong,
+                  icon: const Icon(
+                    Icons.skip_next,
+                    color: AppColors.primary,
+                    size: 32,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     ).animate().fadeIn().slideY(begin: 0.2);
   }

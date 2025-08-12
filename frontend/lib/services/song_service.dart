@@ -255,4 +255,15 @@ class SongService {
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
+
+  Future<bool> checkSongFileExists(int songId) async {
+    try {
+      final response = await _apiService.get('/stream/song/$songId/info');
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
 }

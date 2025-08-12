@@ -63,7 +63,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
               keyboardType: widget.keyboardType,
               validator: widget.validator,
               style: AppTextStyles.body1,
-              maxLines: widget.maxLines,
+              maxLines: widget.isPassword ? 1 : (widget.maxLines ?? 1),
               onChanged: widget.onChanged,
               decoration: InputDecoration(
                 hintText: widget.hint,
