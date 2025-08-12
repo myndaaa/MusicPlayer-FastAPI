@@ -10,6 +10,7 @@ class CustomTextField extends StatefulWidget {
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final IconData? prefixIcon;
+  final int? maxLines;
 
   const CustomTextField({
     super.key,
@@ -20,6 +21,7 @@ class CustomTextField extends StatefulWidget {
     this.validator,
     this.keyboardType,
     this.prefixIcon,
+    this.maxLines,
   });
 
   @override
@@ -49,7 +51,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
               gradient: AppGradients.cardGradient,
               borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
               border: Border.all(
-                color: AppColors.primary.withOpacity(0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -59,6 +61,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
               keyboardType: widget.keyboardType,
               validator: widget.validator,
               style: AppTextStyles.body1,
+              maxLines: widget.maxLines,
               decoration: InputDecoration(
                 hintText: widget.hint,
                 hintStyle: AppTextStyles.body2,
