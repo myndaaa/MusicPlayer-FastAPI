@@ -79,7 +79,6 @@ def create_artist_with_user(db: Session, artist_signup_data: ArtistSignup) -> Tu
     artist = create_artist(db, ArtistCreate(
         artist_stage_name=artist_signup_data.artist_stage_name,
         artist_bio=artist_signup_data.artist_bio,
-        artist_profile_image=artist_signup_data.artist_profile_image,
         artist_social_link=artist_signup_data.artist_social_link
     ), user.id)
     
