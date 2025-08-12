@@ -43,6 +43,10 @@ from app.api.v1.history import router as history_router
 from app.api.v1.playlist import router as playlist_router
 from app.api.v1.playlist_song import router as playlist_song_router
 from app.api.v1.playlist_collaborator import router as playlist_collaborator_router
+# from app.api.v1.upload import router as upload_router
+# from app.api.v1.stream import router as stream_router
+from app.api.v1.album import router as album_router
+from app.api.v1.album_song import router as album_song_router
 
 # Include routers with proper prefixes and tags
 app.include_router(auth_router, prefix="/auth", tags=["authentication"])
@@ -58,6 +62,10 @@ app.include_router(history_router, tags=["history"], prefix="/history")
 app.include_router(playlist_router, tags=["playlists"], prefix="/playlist")
 app.include_router(playlist_song_router, tags=["playlist-songs"], prefix="/playlist")
 app.include_router(playlist_collaborator_router, tags=["playlist-collaborators"], prefix="/playlist")
+# app.include_router(upload_router, tags=["uploads"], prefix="/upload")
+# app.include_router(stream_router, tags=["streaming"], prefix="/stream")
+app.include_router(album_router, tags=["albums"], prefix="/album")
+app.include_router(album_song_router, tags=["album-songs"], prefix="/album")
 
 # CORS configuration
 app.add_middleware(
@@ -103,6 +111,9 @@ async def root():
             "following": "/following",
             "history": "/history",
             "playlists": "/playlist",
+            "albums": "/album",
+            "uploads": "/upload",
+            "streaming": "/stream",
             "health": "/health"
         }
     }

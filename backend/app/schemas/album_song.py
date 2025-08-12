@@ -1,10 +1,14 @@
+"""
+Clean AlbumSong schemas without redundancy.
+"""
+
 from typing import Optional, List, Annotated
 from datetime import datetime
 from pydantic import BaseModel, Field, model_validator
 
 
-# Base schema for album-song relationship
 class AlbumSongBase(BaseModel):
+    """Base schema for album-song relationship data"""
     album_id: int
     song_id: int
     track_number: Annotated[int, Field(gt=0)]
@@ -14,10 +18,12 @@ class AlbumSongBase(BaseModel):
 
 
 class AlbumSongCreate(AlbumSongBase):
+    """Schema for creating album-song relationship"""
     pass
 
 
 class AlbumSongUpdate(BaseModel):
+    """Schema for updating album-song relationship"""
     track_number: Annotated[int, Field(gt=0)]
 
     class Config:
@@ -25,14 +31,16 @@ class AlbumSongUpdate(BaseModel):
 
 
 class AlbumSongOut(AlbumSongBase):
+    """Schema for album-song output with all fields"""
     id: int
 
     class Config:
         from_attributes = True
 
 
-# Nested schemas for relationships
+# Minimal schemas for relationships (reused from album.py)
 class AlbumMinimal(BaseModel):
+    """Minimal album schema for relationships"""
     id: int
     title: str
     cover_image: Optional[str] = None
@@ -43,6 +51,7 @@ class AlbumMinimal(BaseModel):
 
 
 class SongMinimal(BaseModel):
+    """Minimal song schema for relationships"""
     id: int
     title: str
     song_duration: int
@@ -54,22 +63,15 @@ class SongMinimal(BaseModel):
         from_attributes = True
 
 
-# album-song output with relationships
 class AlbumSongWithRelations(AlbumSongOut):
+    """Schema for album-song output with relationships"""
     album: AlbumMinimal
     song: SongMinimal
 
 
-# Album track list
-class AlbumTrackList(BaseModel):
-    album_id: int
-    tracks: List[AlbumSongWithRelations]
-    total_tracks: int
-    total_duration: int  # in seconds
-
-
 # List schemas for pagination
 class AlbumSongList(BaseModel):
+    """Schema for paginated album-song list"""
     album_songs: List[AlbumSongOut]
     total: int
     page: int
@@ -78,6 +80,7 @@ class AlbumSongList(BaseModel):
 
 
 class AlbumSongListWithRelations(BaseModel):
+    """Schema for paginated album-song list with relationships"""
     album_songs: List[AlbumSongWithRelations]
     total: int
     page: int
@@ -85,59 +88,28 @@ class AlbumSongListWithRelations(BaseModel):
     total_pages: int
 
 
-# Search and filter schemas
-class AlbumSongFilter(BaseModel):
-    album_id: Optional[int] = None
-    song_id: Optional[int] = None
-    track_number: Optional[int] = None
-
-
 # Album song management schemas
 class AlbumSongAdd(BaseModel):
-    album_id: int
+    """Schema for adding song to album"""
     song_id: int
     track_number: Annotated[int, Field(gt=0)]
 
 
-class AlbumSongRemove(BaseModel):
-    album_id: int
-    song_id: int
-
-
-class AlbumSongReorder(BaseModel):
-    album_id: int
-    song_id: int
-    new_track_number: Annotated[int, Field(gt=0)]
-
-
 class AlbumSongBulkAdd(BaseModel):
-    album_id: int
+    """Schema for bulk adding songs to album"""
     songs: List[AlbumSongAdd]
 
 
-class AlbumSongBulkRemove(BaseModel):
-    album_id: int
-    song_ids: List[int]
+class AlbumSongBulkReorder(BaseModel):
+    """Schema for bulk reordering album songs"""
+    tracks: List[AlbumSongAdd]  # List of song_id and new track_number
 
 
-# Album song statistics
 class AlbumSongStats(BaseModel):
+    """Schema for album song statistics"""
     album_id: int
     total_tracks: int
     total_duration: int  # in seconds
     average_track_duration: float
     shortest_track: Optional[SongMinimal] = None
-    longest_track: Optional[SongMinimal] = None
-
-
-# track validation schema
-class TrackNumberValidation(BaseModel):
-    album_id: int
-    track_number: int
-
-    @model_validator(mode="after")
-    def validate_track_number(self) -> "TrackNumberValidation":
-        """Ensure track number is positive"""
-        if self.track_number <= 0:
-            raise ValueError("Track number must be positive")
-        return self 
+    longest_track: Optional[SongMinimal] = None 
