@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -294,6 +293,9 @@ coverage/
 
 # Web related
 lib/generated_plugin_registrant.dart
+
+# Allow Flutter lib directory
+!frontend/lib/
 
 # =============================================================================
 # PROJECT SPECIFIC IGNORES
