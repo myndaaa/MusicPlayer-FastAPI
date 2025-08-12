@@ -16,8 +16,10 @@ class ArtistBase(BaseModel):
     class Config:
         from_attributes = True
 
-class ArtistCreate(ArtistBase):
-    pass
+class ArtistCreate(BaseModel):
+    artist_stage_name: ShortStr
+    artist_bio: Optional[LongStr] = None
+    artist_social_link: Optional[Dict[str, Any]] = None
 
 class ArtistUpdate(BaseModel):
     artist_stage_name: Optional[ShortStr] = None
@@ -60,7 +62,6 @@ class ArtistSignup(BaseModel):
     
     artist_stage_name: ShortStr
     artist_bio: Optional[LongStr] = None
-    artist_profile_image: Optional[UrlStr] = None
     artist_social_link: Optional[Dict[str, Any]] = None
 
     @field_validator("artist_stage_name")

@@ -30,7 +30,7 @@ def create_artist(db: Session, artist_data: ArtistCreate, user_id: int) -> Artis
     artist = Artist(
         artist_stage_name=artist_data.artist_stage_name,
         artist_bio=artist_data.artist_bio,
-        artist_profile_image=artist_data.artist_profile_image,
+        artist_profile_image=None,  
         artist_social_link=artist_data.artist_social_link,
         linked_user_account=user_id,
         created_at=datetime.now(timezone.utc)
