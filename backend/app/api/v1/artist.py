@@ -6,16 +6,16 @@ from app.db.session import get_db
 from app.db.models.user import User
 from app.db.models.artist import Artist
 from app.schemas.artist import (
-    ArtistCreate, ArtistOut, ArtistSignup, ArtistStats, 
-    ArtistWithRelations, ArtistProfileUpdate, ArtistAdminUpdate
+    ArtistCreate, ArtistOut, ArtistSignup, ArtistSignupArtistInfo, ArtistSignupUserInfo, 
+    ArtistProfileUpdate, ArtistAdminUpdate, ArtistSignupResponse
 )
+from app.schemas.user import UserOut
 from app.crud.artist import (
     create_artist_with_user, get_artist_by_id, get_artist_by_user_id,
     get_artist_by_stage_name, get_all_artists, get_all_active_artists,
     search_artists_by_name, update_artist, update_artist_by_user_id,
     disable_artist, enable_artist, delete_artist, artist_exists,
-    get_artist_with_related_entities, get_artists_followed_by_user, 
-    get_artist_statistics
+    get_artist_with_related_entities, get_artists_followed_by_user
 )
 from app.api.v1.deps import (
     get_current_active_user, get_current_admin, get_current_musician
@@ -24,36 +24,33 @@ from app.api.v1.deps import (
 router = APIRouter()
 
 
-@router.post("/signup", response_model=dict, status_code=status.HTTP_201_CREATED)
+@router.post("/signup", response_model=ArtistSignupResponse, status_code=status.HTTP_201_CREATED)
 async def create_artist_signup(
     artist_signup_data: ArtistSignup,
     db: Session = Depends(get_db)
-):
+) -> ArtistSignupResponse:
     """
-    Create a new artist account with user profile.
-    
     Creates both user (with musician role) and artist profile in one transaction.
     Validates unique constraints for username, email, and stage name.
-    
     Returns: 201 Created - Artist account successfully created
     Returns: 409 Conflict - Username/email/stage name already exists
     """
     try:
         user, artist = create_artist_with_user(db, artist_signup_data)
-        return {
-            "message": "Artist account created successfully",
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "role": user.role
-            },
-            "artist": {
-                "id": artist.id,
-                "stage_name": artist.artist_stage_name,
-                "bio": artist.artist_bio
-            }
-        }
+        return ArtistSignupResponse(
+            message="Artist account created successfully",
+            user=ArtistSignupUserInfo(
+                id=user.id,
+                username=user.username,
+                email=user.email,
+                role=user.role
+            ),
+            artist=ArtistSignupArtistInfo(
+                id=artist.id,
+                stage_name=artist.artist_stage_name,
+                bio=artist.artist_bio
+            )
+        )
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -72,26 +69,48 @@ async def get_artists_public(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(20, ge=1, le=100, description="Maximum number of records to return"),
     search: Optional[str] = Query(None, min_length=1, description="Search artists by stage name"),
-    active_only: bool = Query(True, description="Return only active artists")
+    active_only: bool = Query(True, description="Return only active artists"),
+    artist_id: Optional[int] = Query(None, description="Get specific artist by ID"),
+    stage_name: Optional[str] = Query(None, min_length=1, description="Get specific artist by stage name")
 ):
     """
-    Get list of artists with optional filtering and pagination.
+    Get artists with flexible filtering options.
     Public endpoint for browsing artists.
     Query Parameters:
     - skip: Number of records to skip (pagination)
     - limit: Maximum number of records to return (pagination)
-    - search: Search artists by stage name
+    - search: Search artists by stage name (returns multiple results)
     - active_only: Return only active artists (default: True)
-    
-    Returns: 200 OK - List of artists
+    - artist_id: Get specific artist by ID (returns single result)
+    - stage_name: Get specific artist by stage name (returns single result)
+
+    Returns: 200 OK - List of artists or single artist
+    Returns: 404 Not Found - Artist not found (when using artist_id or stage_name)
     """
+    
+    if artist_id is not None:
+        artist = get_artist_by_id(db, artist_id)
+        if not artist or artist.is_disabled:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Artist not found"
+            )
+        return [artist]  
+    
+    if stage_name is not None:
+        artist = get_artist_by_stage_name(db, stage_name)
+        if not artist or artist.is_disabled:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Artist not found"
+            )
+        return [artist]  
     if search:
         artists = search_artists_by_name(db, search, skip=skip, limit=limit)
     elif active_only:
         artists = get_all_active_artists(db, skip=skip, limit=limit)
     else:
         artists = get_all_artists(db, skip=skip, limit=limit)
-    
     return artists
 
 
@@ -111,71 +130,6 @@ async def get_followed_artists(
     followed_artists = get_artists_followed_by_user(db, current_user.id, skip=skip, limit=limit)
     return followed_artists
 
-
-@router.get("/{artist_id}", response_model=ArtistOut)
-async def get_artist_public(
-    artist_id: int,
-    db: Session = Depends(get_db)
-):
-    """
-    Get public artist profile by ID.
-    Returns basic artist information for public viewing.
-    Only active artists are returned.
-    Returns: 200 OK - Artist profile found
-    Returns: 404 Not Found - Artist not found or inactive
-    """
-    artist = get_artist_by_id(db, artist_id)
-    if not artist or artist.is_disabled:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Artist not found"
-        )
-    
-    return artist
-
-
-@router.get("/stage-name/{stage_name}", response_model=ArtistOut)
-async def get_artist_by_stage_name_public(
-    stage_name: str,
-    db: Session = Depends(get_db)
-):
-    """
-    Get public artist profile by stage name.
-    Returns basic artist information for public viewing.
-    Only active artists are returned.
-    Returns: 200 OK - Artist profile found
-    Returns: 404 Not Found - Artist not found or inactive
-    """
-    artist = get_artist_by_stage_name(db, stage_name)
-    if not artist or artist.is_disabled:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Artist not found"
-        )
-    
-    return artist
-
-
-@router.get("/me/profile", response_model=ArtistOut)
-async def get_current_artist_profile(
-    current_user: Annotated[User, Depends(get_current_musician)],
-    db: Session = Depends(get_db)
-):
-    """
-    Get current artist's profile information.
-    Returns the authenticated artist's profile data.
-    Requires musician authentication.
-    Returns: 200 OK - Current artist profile
-    Returns: 404 Not Found - Artist profile not found
-    """
-    artist = get_artist_by_user_id(db, current_user.id)
-    if not artist:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Artist profile not found"
-        )
-    
-    return artist
 
 
 @router.put("/me/profile", response_model=ArtistOut)
@@ -226,16 +180,16 @@ async def partial_update_current_artist_profile(
     return updated_artist
 
 
-@router.get("/me/with-relations", response_model=ArtistWithRelations)
-async def get_current_artist_with_relations(
+@router.post("/me/disable")
+async def disable_current_artist_profile(
     current_user: Annotated[User, Depends(get_current_musician)],
     db: Session = Depends(get_db)
 ):
     """
-    Get current artist's profile with related entities.
-    Returns artist profile with eager-loaded relationships (songs, albums, followers).
+    Disable current artist's profile.
+    Artists can disable their own profiles temporarily.
     Requires musician authentication.
-    Returns: 200 OK - Artist profile with relations
+    Returns: 200 OK - Artist profile disabled successfully
     Returns: 404 Not Found - Artist profile not found
     """
     artist = get_artist_by_user_id(db, current_user.id)
@@ -245,14 +199,46 @@ async def get_current_artist_with_relations(
             detail="Artist profile not found"
         )
     
-    artist_with_relations = get_artist_with_related_entities(db, artist.id)
-    if not artist_with_relations:
+    success = disable_artist(db, artist.id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to disable artist profile"
+        )
+    return {"message": "Artist profile disabled successfully"}
+
+
+@router.get("/me/profile", response_model=ArtistOut)
+async def get_current_artist_profile(
+    current_user: Annotated[User, Depends(get_current_musician)],
+    db: Session = Depends(get_db),
+    include_songs: bool = Query(False, description="Include artist's songs"),
+    include_albums: bool = Query(False, description="Include artist's albums"),
+    include_followers: bool = Query(False, description="Include artist's followers")
+):
+    """
+    Get current artist's profile with optional related data.
+    Use query parameters to include specific related entities.
+    Requires musician authentication.
+    Returns: 200 OK - Artist profile with requested relations
+    Returns: 404 Not Found - Artist profile not found
+    """
+    artist = get_artist_by_user_id(db, current_user.id)
+    if not artist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Artist profile not found"
         )
     
-    return artist_with_relations
+    if include_songs or include_albums or include_followers:
+        artist = get_artist_with_related_entities(db, artist.id)
+        if not artist:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Artist profile not found"
+            )
+    
+    return artist
 
 
 @router.get("/me/followers", response_model=List[dict])
@@ -274,10 +260,9 @@ async def get_current_artist_followers(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Artist profile not found"
         )
-    
-    # TODO: in following crud, then update here to return followers
-    return []
 
+    # TODO: in following update to return followers
+    return []
 
 @router.post("/", response_model=ArtistOut, status_code=status.HTTP_201_CREATED)
 async def create_artist_admin(
@@ -308,29 +293,6 @@ async def create_artist_admin(
             detail="Failed to create artist profile"
         )
 
-
-@router.get("/admin/artists", response_model=List[ArtistOut])
-async def get_all_artists_admin(
-    current_admin: Annotated[User, Depends(get_current_admin)],
-    db: Session = Depends(get_db),
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(100, ge=1, le=1000, description="Maximum number of records to return"),
-    active_only: bool = Query(False, description="Return only active artists")
-):
-    """
-    Get all artists with filtering and pagination (Admin only).
-    Query Parameters:
-    - skip: Number of records to skip (pagination)
-    - limit: Maximum number of records to return (pagination)
-    - active_only: Return only active artists
-    Returns: 200 OK - List of artists
-    """
-    if active_only:
-        artists = get_all_active_artists(db, skip=skip, limit=limit)
-    else:
-        artists = get_all_artists(db, skip=skip, limit=limit)
-    
-    return artists
 
 
 @router.get("/admin/artists/{artist_id}", response_model=ArtistOut)
@@ -442,6 +404,7 @@ async def enable_artist_admin(
 ):
     """
     Enable a disabled artist account (Admin only).
+    Admins can re-enable artist profiles that were disabled by the artists themselves.
     Sets is_disabled to False and clears disabled_at timestamp.
     Returns: 200 OK - Artist enabled successfully
     Returns: 404 Not Found - Artist not found
@@ -482,34 +445,4 @@ async def delete_artist_admin(
                 detail="Cannot delete artist with related data"
             )
     return {"message": "Artist deleted successfully"}
-
-
-@router.get("/admin/statistics", response_model=ArtistStats)
-async def get_artist_statistics_admin(
-    current_admin: Annotated[User, Depends(get_current_admin)],
-    db: Session = Depends(get_db)
-):
-    """
-    Get artist statistics (Admin only).
-    Returns comprehensive artist statistics for admin dashboard.
-    Returns: 200 OK - Artist statistics
-    """
-    stats = get_artist_statistics(db)
-    return stats
-
-
-@router.get("/admin/search", response_model=List[ArtistOut])
-async def search_artists_admin(
-    current_admin: Annotated[User, Depends(get_current_admin)],
-    db: Session = Depends(get_db),
-    keyword: str = Query(..., min_length=1, description="Search keyword"),
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(50, ge=1, le=200, description="Maximum number of records to return")
-):
-    """
-    Search artists by stage name (Admin only).
-    Case-insensitive search with pagination.
-    Returns: 200 OK - List of matching artists
-    """
-    artists = search_artists_by_name(db, keyword, skip=skip, limit=limit)
-    return artists 
+ 
