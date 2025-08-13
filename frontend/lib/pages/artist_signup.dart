@@ -4,7 +4,7 @@ import 'package:frontend/widgets/custom_button.dart';
 import '../constants/app_constants.dart';
 import '../widgets/custom_text_field.dart';
 import '../services/auth_service.dart';
-import 'homepage.dart';
+import 'verify.dart';
 
 class ArtistSignupPage extends StatefulWidget {
   const ArtistSignupPage({super.key});
@@ -93,16 +93,27 @@ class _ArtistSignupPageState extends State<ArtistSignupPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message']),
-              backgroundColor: AppColors.success,
+              content: Text(
+                result['message'],
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              backgroundColor: AppColors.success.withValues(alpha: 0.8),
               behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.height - 100,
+                right: 20,
+                left: 20,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
               ),
             ),
           );
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const HomePage()),
+            MaterialPageRoute(builder: (context) => const VerifyPage()),
             (route) => false,
           );
         }
@@ -118,13 +129,15 @@ class _ArtistSignupPageState extends State<ArtistSignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: AppGradients.backgroundGradient,
         ),
         child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSizes.paddingLarge),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSizes.paddingLarge),
+            child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500),
                 child: Form(

@@ -5,8 +5,10 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 import '../services/auth_service.dart';
 import 'dashboard.dart';
+import 'forgot_password.dart';
 import 'user_signup.dart';
 import 'artist_signup.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -64,13 +66,15 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: AppGradients.backgroundGradient,
         ),
         child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppSizes.paddingLarge),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSizes.paddingLarge),
+            child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 400),
                 child: Form(
@@ -163,32 +167,54 @@ class _HomePageState extends State<HomePage> {
                               },
                             ),
                             
-                            CustomTextField(
-                              label: 'Password',
-                              hint: 'Enter your password',
-                              controller: _passwordController,
-                              isPassword: true,
-                              prefixIcon: Icons.lock,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your password';
-                                }
-                                if (value.length < 6) {
-                                  return 'Password must be at least 6 characters';
-                                }
-                                return null;
-                              },
-                            ),
+                                                          CustomTextField(
+                                label: 'Password',
+                                hint: 'Enter your password',
+                                controller: _passwordController,
+                                isPassword: true,
+                                prefixIcon: Icons.lock,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your password';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              
+                              // Forgot Password Link
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => const ForgotPasswordPage(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'Forgot Password?',
+                                    style: AppTextStyles.body2.copyWith(
+                                      color: AppColors.primary,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             
+                            // Error Message
                             if (_errorMessage != null) ...[
                               const SizedBox(height: AppSizes.paddingMedium),
                               Container(
+                                width: double.infinity,
                                 padding: const EdgeInsets.all(AppSizes.paddingMedium),
                                 decoration: BoxDecoration(
                                   color: AppColors.error.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+                                  borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
                                   border: Border.all(
                                     color: AppColors.error.withValues(alpha: 0.3),
+                                    width: 1,
                                   ),
                                 ),
                                 child: Row(

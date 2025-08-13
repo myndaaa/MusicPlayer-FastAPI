@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'pages/homepage.dart';
-import 'pages/dashboard.dart';
+import 'pages/splash_screen.dart';
 import 'constants/app_constants.dart';
-import 'services/auth_service.dart';
 
 void main() {
   runApp(const MusicStreamApp());
@@ -70,54 +68,7 @@ class MusicStreamApp extends StatelessWidget {
           contentPadding: const EdgeInsets.all(AppSizes.paddingMedium),
         ),
       ),
-      home: const AuthWrapper(),
+      home: const SplashScreen(),
     );
-  }
-}
-
-class AuthWrapper extends StatefulWidget {
-  const AuthWrapper({super.key});
-
-  @override
-  State<AuthWrapper> createState() => _AuthWrapperState();
-}
-
-class _AuthWrapperState extends State<AuthWrapper> {
-  final AuthService _authService = AuthService();
-  bool _isLoading = true;
-  bool _isLoggedIn = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAuthStatus();
-  }
-
-  Future<void> _checkAuthStatus() async {
-    final isLoggedIn = await _authService.isLoggedIn();
-    setState(() {
-      _isLoggedIn = isLoggedIn;
-      _isLoading = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: AppGradients.backgroundGradient,
-          ),
-          child: const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return _isLoggedIn ? const Dashboard() : const HomePage();
   }
 }
