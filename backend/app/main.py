@@ -32,6 +32,9 @@ app.add_exception_handler(JWTDecodeError, jwt_decode_exception_handler)
 # Import routers
 from app.api.v1.auth import router as auth_router
 from app.api.v1.user import router as user_router
+from app.api.v1.artist import router as artist_router
+from app.api.v1.band import router as band_router
+from app.api.v1.artist_band_member import router as artist_band_member_router
 
 # Include routers with proper prefixes and tags
 app.include_router(
@@ -45,6 +48,36 @@ app.include_router(
         401: {"description": "Unauthorized"},
         403: {"description": "Forbidden - Insufficient permissions"},
         404: {"description": "User not found"}
+    }
+)
+
+app.include_router(
+    artist_router, tags=["artists"], prefix="/artist",
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden - Insufficient permissions"},
+        404: {"description": "Artist not found"},
+        409: {"description": "Conflict - Resource already exists"}
+    }
+)
+
+app.include_router(
+    band_router, tags=["bands"], prefix="/band",
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden - Insufficient permissions"},
+        404: {"description": "Band not found"},
+        409: {"description": "Conflict - Resource already exists"}
+    }
+)
+
+app.include_router(
+    artist_band_member_router, tags=["artist-band-members"], prefix="/artist-band-member",
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden - Insufficient permissions"},
+        404: {"description": "Membership not found"},
+        409: {"description": "Conflict - Resource already exists"}
     }
 )
 
@@ -82,7 +115,10 @@ async def root():
         "redoc": "/redoc",
         "endpoints": {
             "authentication": "/auth",
-            "users": "/users",
+            "users": "/user",
+            "artists": "/artist",
+            "bands": "/band",
+            "artist-band-members": "/artist-band-member",
             "health": "/health"
         }
     }

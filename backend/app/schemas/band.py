@@ -3,12 +3,12 @@ from datetime import datetime
 from pydantic import BaseModel, StringConstraints, Field, model_validator
 
 
-# Base schema for band
+# Base schema for band - reused by most schemas
 class BandBase(BaseModel):
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
     bio: Optional[str] = None
     profile_picture: Optional[Annotated[str, StringConstraints(max_length=255)]] = None
-    social_link: Optional[dict] = None  # JSON field for social media links
+    social_link: Optional[dict] = None
 
     class Config:
         from_attributes = True
@@ -18,7 +18,7 @@ class BandCreate(BandBase):
     pass
 
 
-class BandUpdate(BaseModel):
+class BandUpdate(BandBase):
     name: Optional[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]] = None
     bio: Optional[str] = None
     profile_picture: Optional[Annotated[str, StringConstraints(max_length=255)]] = None
@@ -69,16 +69,6 @@ class AlbumMinimal(BaseModel):
         from_attributes = True
 
 
-class UserMinimal(BaseModel):
-    id: int
-    username: str
-    first_name: str
-    last_name: str
-
-    class Config:
-        from_attributes = True
-
-
 # Band member schema
 class BandMember(BaseModel):
     band_member_id: int
@@ -98,67 +88,36 @@ class BandWithRelations(BandOut):
     members: List[BandMember] = []
 
 
-# Band with statistics
-class BandWithStats(BandWithRelations):
-    total_songs: int
-    total_albums: int
-    total_members: int
-    current_members: int
-    total_followers: int
-
-
-# Band status update
-class BandStatus(BaseModel):
-    is_disabled: bool
-    disabled_at: Optional[datetime] = None
+# Band statistics
+class BandStats(BaseModel):
+    total_bands: int
+    active_bands: int
+    disabled_bands: int
+    bands_with_songs: int
+    bands_with_albums: int
 
     class Config:
         from_attributes = True
 
 
-# List schemas for pagination
-class BandList(BaseModel):
-    bands: List[BandOut]
-    total: int
-    page: int
-    per_page: int
-    total_pages: int
-
-
-class BandListWithRelations(BaseModel):
-    bands: List[BandWithRelations]
-    total: int
-    page: int
-    per_page: int
-    total_pages: int
-
-
 # Search and filter schemas
-class BandFilter(BaseModel):
-    name: Optional[str] = None
-    is_disabled: Optional[bool] = None
-    created_at_from: Optional[datetime] = None
-    created_at_to: Optional[datetime] = None
-    has_members: Optional[bool] = None
-    has_songs: Optional[bool] = None
-
-
 class BandSearch(BaseModel):
     query: str
     limit: int = Field(default=20, ge=1, le=100)
     offset: int = Field(default=0, ge=0)
 
 
-# Band following schema
-class BandActionBase(BaseModel):
+# Band member management schemas
+class BandMemberAdd(BaseModel):
     band_id: int
-    user_id: int
+    artist_id: int
+    joined_on: Optional[datetime] = None
 
-class BandFollow(BandActionBase):
-    pass
 
-class BandUnfollow(BandActionBase):
-    pass
+class BandMemberRemove(BaseModel):
+    band_id: int
+    artist_id: int
+    left_at: Optional[datetime] = None
 
 
 # Band social links schema
@@ -175,46 +134,4 @@ class BandSocialLinks(BaseModel):
         """Ensure at least one social link is provided"""
         if not any([self.facebook, self.twitter, self.instagram, self.youtube, self.spotify, self.website]):
             raise ValueError("At least one social link must be provided")
-        return self
-
-
-# Band member management schemas
-class BandMemberAdd(BaseModel):
-    band_id: int
-    artist_id: int
-    joined_on: Optional[datetime] = None
-
-
-class BandMemberRemove(BaseModel):
-    band_id: int
-    artist_id: int
-    left_at: Optional[datetime] = None
-
-
-class BandMemberBulkAdd(BaseModel):
-    band_id: int
-    artists: List[BandMemberAdd]
-
-
-class BandMemberBulkRemove(BaseModel):
-    band_id: int
-    artist_ids: List[int]
-
-
-# Band statistics
-class BandStats(BaseModel):
-    total_bands: int
-    active_bands: int
-    bands_with_members: int
-    bands_with_songs: int
-    bands_with_albums: int
-    average_members_per_band: float
-    most_popular_band: Optional[BandOut] = None
-
-
-# Band recommendations
-class BandRecommendation(BaseModel):
-    user_id: int
-    recommended_bands: List[BandOut]
-    recommendation_reason: str  
-    confidence_score: float  # 0.0 to 1.0 
+        return self 
