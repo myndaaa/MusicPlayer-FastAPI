@@ -65,9 +65,6 @@ def get_former_bands_for_artist(db: Session, artist_id: int) -> List[ArtistBandM
     ).all()
 
 
-
-
-
 def leave_band(db: Session, artist_id: int, band_id: int, left_at: Optional[datetime] = None) -> Optional[ArtistBandMember]:
     """Marks an artist as having left a band"""
     if not left_at:
