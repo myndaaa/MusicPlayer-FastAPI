@@ -13,7 +13,6 @@ def create_artist_band_member(db: Session, data: ArtistBandMemberCreate) -> Arti
     db_obj = ArtistBandMember(**data.model_dump())
     db.add(db_obj)
     db.commit()
-    db.refresh(db_obj)
     return db_obj
 
 
