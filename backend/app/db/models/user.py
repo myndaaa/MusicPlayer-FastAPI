@@ -27,6 +27,10 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     disabled_at = Column(DateTime, nullable=True)
     
+    # Email Verification Fields
+    email_verified = Column(Boolean, default=False)
+    email_verified_at = Column(DateTime, nullable=True)
+    
 
     # Relationships
 
@@ -58,6 +62,8 @@ class User(Base):
     uploaded_songs = relationship("Song", back_populates="uploaded_by", lazy="select")
     # Admin uploads albums
     uploaded_albums = relationship("Album", back_populates="uploaded_by", lazy="select")
+    # Email verification tokens
+    email_verification_tokens = relationship("EmailVerificationToken", back_populates="user", lazy="select", cascade="all, delete-orphan")
 
     
     # Table-level constraints
