@@ -27,7 +27,7 @@ class EmailService:
     
     async def send_password_reset_email(self, user: User, token: str) -> bool:
         """Send password reset email"""
-        reset_url = f"{self.verification_base_url}/reset?token={token}"
+        reset_url = f"http://localhost:8000/auth/reset-password?token={token}"
         
         subject = "🔐 Reset Your Music App Password"
         html_content = self._create_password_reset_email_html(user, reset_url)
@@ -113,6 +113,15 @@ class EmailService:
                               box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);">
                         🔐 Reset Password
                     </a>
+                </div>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <p style="color: #666; font-size: 14px;">
+                        If the button doesn't work, copy and paste this link into your browser:
+                    </p>
+                    <p style="color: #dc3545; font-size: 12px; word-break: break-all; background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                        {reset_url}
+                    </p>
                 </div>
                 
                 <p style="color: #666; font-size: 14px; margin-top: 25px;">
