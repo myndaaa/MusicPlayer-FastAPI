@@ -29,6 +29,14 @@ class Settings(BaseSettings):
     # Password pepper
     PASSWORD_PEPPER: str
 
+    # Email Configuration
+    EMAIL_PROVIDER: str = "sendgrid"  # console, sendgrid, gmail
+    SENDGRID_API_KEY: Optional[str] = None
+    GMAIL_USERNAME: Optional[str] = None
+    GMAIL_PASSWORD: Optional[str] = None
+    FROM_EMAIL: str = "mysha.shemontee@monstar-lab.com"
+    VERIFICATION_BASE_URL: str = "http://localhost:8000/auth/verify-email"
+
     # Test User Credentials (optional, only for development)
     TEST_ADMIN_USERNAME: Optional[str] = None
     TEST_ADMIN_EMAIL: Optional[str] = None
