@@ -17,6 +17,8 @@ from app.crud.artist import (
     get_artist_with_related_entities, get_artists_followed_by_user, 
     get_artist_statistics
 )
+from app.services.token_service import TokenService
+from app.services.email_service import EmailService
 from app.core.deps import (
     get_current_active_user, get_current_admin, get_current_musician
 )
@@ -40,8 +42,16 @@ async def create_artist_signup(
     """
     try:
         user, artist = create_artist_with_user(db, artist_signup_data)
+        
+        # Generate verification token
+        verification_token = TokenService.create_verification_token(db, user.id)
+        
+        # Send verification email
+        email_service = EmailService()
+        await email_service.send_verification_email(user, verification_token.token)
+        
         return {
-            "message": "Artist account created successfully",
+            "message": "Artist account created successfully. Please check your email to verify your account.",
             "user": {
                 "id": user.id,
                 "username": user.username,

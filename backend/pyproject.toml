@@ -29,6 +29,7 @@ python-multipart = "^0.0.9"
 mutagen = ">=1.45.0"
 aiofiles = "^24.1.0"
 Pillow = "^11.1.0"
+sendgrid = "^6.12.4"
 
 
 
