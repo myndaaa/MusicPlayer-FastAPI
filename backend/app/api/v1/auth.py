@@ -34,6 +34,13 @@ async def login(
             detail="Incorrect username or password"
         )
     
+    # Check email verification
+    if not user.email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email not verified. Please check your email and click the verification link."
+        )
+    
     # create tokens
     token_response = auth_service.create_tokens(user)
     return token_response
