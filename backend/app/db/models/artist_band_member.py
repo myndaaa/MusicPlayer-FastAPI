@@ -22,7 +22,7 @@ class ArtistBandMember(Base):
     # Relationships
     
     artist = relationship("Artist", back_populates="band_memberships", lazy="select")
-    band = relationship("Band", back_populates="artist_members", lazy="select")
+    band = relationship("Band", back_populates="artist_band_members", lazy="select")
 
 
     # Indexes and Constraints

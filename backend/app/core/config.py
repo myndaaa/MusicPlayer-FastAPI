@@ -5,41 +5,63 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # App
-    app_name: str = "MusicStreamer"
-    app_env: str = "development"
-    app_version: str = "1.0.0"
+    APP_NAME: str = "MusicStreamer"
+    APP_ENV: str = "development"
+    APP_VERSION: str = "1.0.0"
 
     # Server
     backend_host: str = "127.0.0.1"
     backend_port: int = 8000
 
     # Database
-    postgres_db: str
-    postgres_user: str
-    postgres_password: str
-    postgres_server: str = "localhost"
-    postgres_port: int = 5432
+    POSTGRES_DB: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_SERVER: str = "localhost"
+    POSTGRES_PORT: int = 5432
 
     # JWT
-    jwt_secret_key: str
-    jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60
-    refresh_token_expire_minutes: int = 43200  
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 43200  
 
     # Password pepper
-    password_pepper: str
+    PASSWORD_PEPPER: str
+
+    # Test User Credentials (optional, only for development)
+    TEST_ADMIN_USERNAME: Optional[str] = None
+    TEST_ADMIN_EMAIL: Optional[str] = None
+    TEST_ADMIN_PASSWORD: Optional[str] = None
+    TEST_ADMIN_FIRST_NAME: Optional[str] = None
+    TEST_ADMIN_LAST_NAME: Optional[str] = None
+
+    TEST_MUSICIAN_USERNAME: Optional[str] = None
+    TEST_MUSICIAN_EMAIL: Optional[str] = None
+    TEST_MUSICIAN_PASSWORD: Optional[str] = None
+    TEST_MUSICIAN_FIRST_NAME: Optional[str] = None
+    TEST_MUSICIAN_LAST_NAME: Optional[str] = None
+    TEST_MUSICIAN_STAGE_NAME: Optional[str] = None
+    TEST_MUSICIAN_BIO: Optional[str] = None
+
+    TEST_LISTENER_USERNAME: Optional[str] = None
+    TEST_LISTENER_EMAIL: Optional[str] = None
+    TEST_LISTENER_PASSWORD: Optional[str] = None
+    TEST_LISTENER_FIRST_NAME: Optional[str] = None
+    TEST_LISTENER_LAST_NAME: Optional[str] = None
 
     @property
     def DATABASE_URL(self) -> PostgresDsn:
         return (
-            f"postgresql://{self.postgres_user}:{self.postgres_password}"
-            f"@{self.postgres_server}:{self.postgres_port}/{self.postgres_db}"
+            f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+            f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-        case_sensitive = False  
+        case_sensitive = False
+        extra = "allow" 
 
 settings = Settings()
 

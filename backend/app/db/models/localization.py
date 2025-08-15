@@ -1,5 +1,3 @@
-# app/db/models/localization.py
-
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base

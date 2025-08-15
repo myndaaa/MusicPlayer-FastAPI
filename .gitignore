@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -136,6 +135,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.backup
 .envrc
 .venv
 env/
@@ -206,7 +206,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-
 # macOS system files
 .DS_Store
 .AppleDouble
@@ -227,4 +226,114 @@ com.apple.timemachine.donotpresent
 
 # macOS file metadata
 .DS_Store
+
+# =============================================================================
+# FLUTTER/DART SPECIFIC IGNORES
+# =============================================================================
+
+# Flutter/Dart specific
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# iOS/XCode related
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# Coverage
+coverage/
+
+# Exceptions to above rules.
+!**/ios/**/default.mode1v3
+!**/ios/**/default.mode2v3
+!**/ios/**/default.pbxuser
+!**/ios/**/default.perspectivev3
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+# Web related
+lib/generated_plugin_registrant.dart
+
+# Allow Flutter lib directory
+!frontend/lib/
+
+# =============================================================================
+# PROJECT SPECIFIC IGNORES
+# =============================================================================
+
+# Backend uploads (media files)
+backend/uploads/
+
+# Backend environment files
+backend/.env
+backend/.env.local
+backend/.env.production
+
+# Frontend environment files
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 

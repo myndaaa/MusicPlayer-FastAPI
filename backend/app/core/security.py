@@ -3,9 +3,9 @@ from typing import Optional, Dict, Any
 from argon2 import PasswordHasher, exceptions as argon2_exceptions
 import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError
-from core.exception import JWTExpiredError, JWTDecodeError
-from core.config import settings
-from core.exception import PasswordVerificationError
+from app.core.custom_exception import JWTExpiredError, JWTDecodeError
+from app.core.config import settings
+from app.core.custom_exception import PasswordVerificationError
 
 
 # Argon2id hasher defaults
@@ -25,7 +25,7 @@ def hash_password(password: str) -> str:
     :return: Secure hashed password to store in DB
     """
     # append pepper 
-    peppered_password = password + settings.password_pepper
+    peppered_password = password + settings.PASSWORD_PEPPER
     return pwd_hasher.hash(peppered_password)
 
 
@@ -38,7 +38,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     :raises: PasswordVerificationError if password does not match or verification fails
     """
 
-    peppered_password = plain_password + settings.password_pepper
+    peppered_password = plain_password + settings.PASSWORD_PEPPER
     try:
         # Returns True if match; raises error otherwise
         return pwd_hasher.verify(hashed_password, peppered_password)
@@ -63,18 +63,19 @@ def create_access_token(subject: str, username: str, email: str, role: str, expi
     Returns:
     - Signed JWT token string
     """
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
+    now = datetime.now(timezone.utc)
+    expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     payload = {
         "sub": subject, # token subject, user_id
-        "exp": expire, # token expiry
-        "iat": datetime.now(timezone.utc), # issued at timestamp
+        "exp": int(expire.timestamp()), # Unix timestamp for consistency
+        "iat": int(now.timestamp()), # Unix timestamp for consistency
         "type": "access", # distinguish between access and refresh
         "username": username,
         "email": email,
         "role": role.lower(), # admin, artist, listener
         **(additional_claims or {}) # for future use 
     }
-    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
 def create_refresh_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
@@ -89,14 +90,15 @@ def create_refresh_token(subject: str, expires_delta: Optional[timedelta] = None
     Returns:
     - Signed JWT refresh token string
     """
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.refresh_token_expire_minutes))
+    now = datetime.now(timezone.utc)
+    expire = now + (expires_delta or timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES))
     payload = {
         "sub": subject,
-        "exp": expire,
-        "iat": datetime.now(timezone.utc),
+        "exp": int(expire.timestamp()), # Unix timestamp for consistency
+        "iat": int(now.timestamp()), # Unix timestamp for consistency
         "type": "refresh", # marks this token as a refresh token
     }
-    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
 
@@ -106,7 +108,7 @@ def decode_token(token: str) -> Dict[str, Any]:
     Raises custom exceptions for expired or invalid tokens.
     """
     try:
-        return jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
     except ExpiredSignatureError:
         raise JWTExpiredError()
     except InvalidTokenError:
