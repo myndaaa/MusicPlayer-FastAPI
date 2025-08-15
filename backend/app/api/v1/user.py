@@ -18,13 +18,15 @@ from app.crud.user import (
     bulk_update_user_status, get_user_count_by_role, get_active_user_count,
     
 )
+from app.services.token_service import TokenService
+from app.services.email_service import EmailService
 from app.core.deps import (
     get_current_active_user, get_current_admin
 )
 
 router = APIRouter()
 
-@router.post("/signup", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post("/signup", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_user_signup(
     user_data: UserSignup, 
     db: Session = Depends(get_db)
@@ -34,9 +36,10 @@ async def create_user_signup(
     - Validates user data and password strength
     - Checks for unique username and email
     - Automatically sets role to 'listener'
-    - Creates active user account
+    - Creates user account (email_verified = False by default)
+    - Sends verification email
     
-    Returns: 201 Created - User successfully created
+    Returns: 201 Created - User successfully created with verification message
     """
     # Check if username already exists
     if get_user_by_username(db, user_data.username):
@@ -63,7 +66,16 @@ async def create_user_signup(
         )
         
         user = create_user(db, user_create_data)
-        return user
+        
+        verification_token = TokenService.create_verification_token(db, user.id)
+        email_service = EmailService()
+        await email_service.send_verification_email(user, verification_token.token)
+        
+        return {
+            "message": "Account created successfully. Please check your email to verify your account.",
+            "user_id": user.id,
+            "email": user.email
+        }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,  # 400 Bad Request invalid data
