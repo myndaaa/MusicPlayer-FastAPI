@@ -2,7 +2,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from sqlalchemy.orm import Session
-from app.models.email_verification import EmailVerificationToken
+from db.models.email_verification import EmailVerificationToken
 from app.db.models.user import User
 
 

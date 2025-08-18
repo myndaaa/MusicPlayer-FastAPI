@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.db.models.user import User
-from app.models.email_verification import EmailVerificationToken
+from db.models.email_verification import EmailVerificationToken
 from app.services.token_service import TokenService
 from app.services.email_service import EmailService
 from datetime import datetime, timezone

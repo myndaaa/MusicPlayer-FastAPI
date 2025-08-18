@@ -22,4 +22,4 @@ from app.db.models.user import User #18
 from app.db.models.user_subscription import UserSubscription #19
 from app.db.models.system_config import SystemConfig #20
 from app.db.models.refresh_token import RefreshToken #21
-from app.models.email_verification import EmailVerificationToken #22
+from db.models.email_verification import EmailVerificationToken #22
