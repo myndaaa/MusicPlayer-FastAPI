@@ -13,7 +13,6 @@ def create_artist_band_member(db: Session, data: ArtistBandMemberCreate) -> Arti
     db_obj = ArtistBandMember(**data.model_dump())
     db.add(db_obj)
     db.commit()
-    db.refresh(db_obj)
     return db_obj
 
 
@@ -64,9 +63,6 @@ def get_former_bands_for_artist(db: Session, artist_id: int) -> List[ArtistBandM
             ArtistBandMember.is_current_member == False
         )
     ).all()
-
-
-
 
 
 def leave_band(db: Session, artist_id: int, band_id: int, left_at: Optional[datetime] = None) -> Optional[ArtistBandMember]:

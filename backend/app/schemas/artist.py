@@ -38,19 +38,6 @@ class ArtistOut(ArtistBase):
     class Config:
         from_attributes = True
 
-class ArtistInDB(ArtistOut):
-    pass
-
-class ArtistStats(BaseModel):
-    total_artists: int
-    active_artists: int
-    disabled_artists: int
-    artists_with_songs: int
-    artists_with_albums: int
-
-class ArtistWithRelations(ArtistOut):
-    pass
-
 class ArtistSignup(BaseModel):
     username: ShortStr
     first_name: ShortStr
@@ -77,3 +64,32 @@ class ArtistProfileUpdate(ArtistUpdate):
 
 class ArtistAdminUpdate(ArtistUpdate):
     is_disabled: Optional[bool] = None
+
+
+class ArtistSignupUserInfo(BaseModel):
+    id: int
+    username: str
+    email: str
+    role: str
+
+    class Config:
+        from_attributes = True
+
+
+class ArtistSignupArtistInfo(BaseModel):
+    id: int
+    stage_name: str
+    bio: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ArtistSignupResponse(BaseModel):
+    message: str
+    user: ArtistSignupUserInfo
+    artist: ArtistSignupArtistInfo
+
+    class Config:
+        from_attributes = True
+
