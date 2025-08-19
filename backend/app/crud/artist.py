@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func
 from app.db.models.artist import Artist
 from app.db.models.user import User
-from app.schemas.artist import ArtistCreate, ArtistUpdate, ArtistSignup, ArtistStats
+from app.schemas.artist import ArtistCreate, ArtistUpdate, ArtistSignup
 from app.core.security import hash_password
 
 
@@ -341,27 +341,6 @@ def stage_name_taken(db: Session, stage_name: str, exclude_artist_id: Optional[i
     return query.first() is not None
 
 
-def get_artist_count(db: Session) -> int:
-    """
-    Get total number of artists.
-    Args:
-        db: Database session
-    Returns:
-        Total count of artists
-    """
-    return db.query(func.count(Artist.id)).scalar()
-
-
-def get_active_artist_count(db: Session) -> int:
-    """
-    Get count of active artists.
-    Args:
-        db: Database session
-    Returns:
-        Count of active artists
-    """
-    return db.query(func.count(Artist.id)).filter(Artist.is_disabled == False).scalar()
-
 
 def get_artist_with_related_entities(db: Session, artist_id: int) -> Optional[Artist]:
     """
@@ -395,30 +374,3 @@ def get_artists_followed_by_user(db: Session, user_id: int, skip: int = 0, limit
         Artist.followers.any(user_id=user_id)
     ).offset(skip).limit(limit).all()
 
-
-def get_artist_statistics(db: Session) -> ArtistStats:
-    """
-    Get comprehensive artist statistics for admin dashboard.
-    Args:
-        db: Database session
-    Returns:
-        ArtistStats object with various counts
-    """
-    total_artists = get_artist_count(db)
-    active_artists = get_active_artist_count(db)
-    disabled_artists = total_artists - active_artists
-    
-    artists_with_songs = db.query(func.count(func.distinct(Artist.id))).join(
-        Artist.songs
-    ).scalar()
-    artists_with_albums = db.query(func.count(func.distinct(Artist.id))).join(
-        Artist.albums
-    ).scalar()
-    
-    return ArtistStats(
-        total_artists=total_artists,
-        active_artists=active_artists,
-        disabled_artists=disabled_artists,
-        artists_with_songs=artists_with_songs or 0,
-        artists_with_albums=artists_with_albums or 0
-    )
