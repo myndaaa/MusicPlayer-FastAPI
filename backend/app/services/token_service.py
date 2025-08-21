@@ -3,7 +3,7 @@ from datetime import timedelta
 from typing import Optional
 from sqlalchemy.orm import Session
 
-from app.core.utils import utc_now, EMAIL_VERIFICATION_TOKEN_HOURS, PASSWORD_RESET_TOKEN_HOURS
+from app.core.utils import utc_now, EMAIL_VERIFICATION_TOKEN_HOURS
 from app.db.models.email_verification import EmailVerificationToken
 
 
@@ -22,7 +22,7 @@ class TokenService:
         expires_in_hours: Optional[int] = None,
     ) -> EmailVerificationToken:
         if expires_in_hours is None:
-            expires_in_hours = EMAIL_VERIFICATION_TOKEN_HOURS if token_type == "email_verification" else PASSWORD_RESET_TOKEN_HOURS
+            expires_in_hours = EMAIL_VERIFICATION_TOKEN_HOURS
 
         token_value = TokenService.generate_token()
         expires_at = utc_now() + timedelta(hours=expires_in_hours)
