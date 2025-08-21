@@ -22,7 +22,7 @@ from app.core.deps import (
 )
 from app.services.token_service import TokenService
 from app.services.email_service import EmailService
-from app.dependencies import get_email_service
+from app.dependencies.email_dependency import get_email_service
 
 router = APIRouter()
 

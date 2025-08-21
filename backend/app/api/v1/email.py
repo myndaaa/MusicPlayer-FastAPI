@@ -9,7 +9,7 @@ from app.schemas.email import (
 )
 from app.crud.email import EmailCRUD
 from app.services.email_service import EmailService
-from app.dependencies import get_email_service
+from app.dependencies.email_dependency import get_email_service
 
 
 router = APIRouter(prefix="/auth", tags=["email"])
