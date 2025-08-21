@@ -21,13 +21,17 @@ from app.crud.user import (
 from app.core.deps import (
     get_current_active_user, get_current_admin
 )
+from app.services.token_service import TokenService
+from app.services.email_service import EmailService
+from app.dependencies import get_email_service
 
 router = APIRouter()
 
 @router.post("/signup", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 async def create_user_signup(
     user_data: UserSignup, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    email_service: EmailService = Depends(get_email_service),
 ):
     """
     Create a new user account
@@ -63,6 +67,12 @@ async def create_user_signup(
         )
         
         user = create_user(db, user_create_data)
+        
+        token = TokenService.create_token(db, user.id, "email_verification")
+        try:
+            email_service.send_verification_email(user, token.token)
+        except Exception:
+            pass
         return user
     except Exception as e:
         raise HTTPException(

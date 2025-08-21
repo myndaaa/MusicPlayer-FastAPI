@@ -20,6 +20,9 @@ from app.crud.artist import (
 from app.core.deps import (
     get_current_active_user, get_current_admin, get_current_musician
 )
+from app.services.token_service import TokenService
+from app.services.email_service import EmailService
+from app.dependencies import get_email_service
 
 router = APIRouter()
 
@@ -27,7 +30,8 @@ router = APIRouter()
 @router.post("/signup", response_model=ArtistSignupResponse, status_code=status.HTTP_201_CREATED)
 async def create_artist_signup(
     artist_signup_data: ArtistSignup,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    email_service: EmailService = Depends(get_email_service),
 ) -> ArtistSignupResponse:
     """
     Creates both user (with musician role) and artist profile in one transaction.
@@ -37,6 +41,12 @@ async def create_artist_signup(
     """
     try:
         user, artist = create_artist_with_user(db, artist_signup_data)
+        
+        token = TokenService.create_token(db, user.id, "email_verification")
+        try:
+            email_service.send_verification_email(user, token.token)
+        except Exception:
+            pass
         return ArtistSignupResponse(
             message="Artist account created successfully",
             user=ArtistSignupUserInfo(
