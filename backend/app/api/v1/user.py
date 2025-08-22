@@ -19,7 +19,7 @@ from app.crud.user import (
     
 )
 from app.api.v1.deps import (
-    get_current_active_user, get_current_admin, get_current_user_optional
+    get_current_active_user, get_current_admin
 )
 
 router = APIRouter()
