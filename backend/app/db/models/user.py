@@ -19,6 +19,9 @@ class User(Base):
     password = Column(String(255), nullable=False)
     role = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False, index=True)
+    # Email verification fields
+    email_verified = Column(Boolean, default=False)
+    email_verified_at = Column(DateTime(timezone=True), nullable=True)
 
 
     # Audit Fields
@@ -30,6 +33,8 @@ class User(Base):
 
     # Relationships
 
+    
+    email_verification_tokens = relationship("EmailVerificationToken", back_populates="user",cascade="all, delete-orphan",lazy="select",)
     # system_config entries updated by this user 
     system_configs = relationship("SystemConfig", back_populates="updated_by_admin", lazy="select")
     # localization entries updated by this user

@@ -47,6 +47,7 @@ from app.api.v1.upload import router as upload_router
 from app.api.v1.stream import router as stream_router
 from app.api.v1.album import router as album_router
 from app.api.v1.album_song import router as album_song_router
+from app.api.v1.email import router as email_router
 
 # Include routers with proper prefixes and tags
 app.include_router(auth_router, prefix="/auth", tags=["authentication"])
@@ -66,6 +67,7 @@ app.include_router(upload_router, tags=["uploads"], prefix="/upload")
 app.include_router(stream_router, tags=["streaming"], prefix="/stream")
 app.include_router(album_router, tags=["albums"], prefix="/album")
 app.include_router(album_song_router, tags=["album-songs"], prefix="/album")
+app.include_router(email_router)
 
 # CORS configuration
 app.add_middleware(
