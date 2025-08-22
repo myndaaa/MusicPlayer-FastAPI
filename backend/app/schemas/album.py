@@ -1,10 +1,14 @@
+"""
+Clean Album schemas without redundancy.
+"""
+
 from typing import Optional, List, Annotated
 from datetime import datetime
 from pydantic import BaseModel, StringConstraints, Field, model_validator
 
 
-# Base schema for album
 class AlbumBase(BaseModel):
+    """Base schema for album data with common fields"""
     title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=255)]
     description: Optional[str] = None
     cover_image: Optional[Annotated[str, StringConstraints(max_length=255)]] = None
@@ -26,24 +30,23 @@ class AlbumBase(BaseModel):
 
 
 class AlbumCreate(AlbumBase):
-    uploaded_by_user_id: int
+    """Schema for creating a new album"""
+    pass
 
 
 class AlbumUpdate(BaseModel):
+    """Schema for updating album metadata"""
     title: Optional[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=255)]] = None
     description: Optional[str] = None
     cover_image: Optional[Annotated[str, StringConstraints(max_length=255)]] = None
     release_date: Optional[datetime] = None
-    album_artist_id: Optional[int] = None
-    album_band_id: Optional[int] = None
-    artist_name: Optional[Annotated[str, StringConstraints(max_length=100)]] = None
-    band_name: Optional[Annotated[str, StringConstraints(max_length=100)]] = None
 
     class Config:
         from_attributes = True
 
 
 class AlbumOut(AlbumBase):
+    """Schema for album output with all fields"""
     id: int
     uploaded_by_user_id: int
 
@@ -51,8 +54,9 @@ class AlbumOut(AlbumBase):
         from_attributes = True
 
 
-# Schemas for relationships
+# Minimal schemas for relationships (reused across modules)
 class ArtistMinimal(BaseModel):
+    """Minimal artist schema for relationships"""
     id: int
     artist_stage_name: str
     artist_profile_image: Optional[str] = None
@@ -62,6 +66,7 @@ class ArtistMinimal(BaseModel):
 
 
 class BandMinimal(BaseModel):
+    """Minimal band schema for relationships"""
     id: int
     name: str
     profile_picture: Optional[str] = None
@@ -71,6 +76,7 @@ class BandMinimal(BaseModel):
 
 
 class UserMinimal(BaseModel):
+    """Minimal user schema for relationships"""
     id: int
     username: str
     first_name: str
@@ -81,40 +87,34 @@ class UserMinimal(BaseModel):
 
 
 class SongMinimal(BaseModel):
+    """Minimal song schema for relationships"""
     id: int
     title: str
     song_duration: int
     cover_image: Optional[str] = None
+    artist_name: Optional[str] = None
+    band_name: Optional[str] = None
 
     class Config:
         from_attributes = True
 
 
-# Album song relationship schema
-class AlbumSongTrack(BaseModel):
-    track_number: int
-    song: SongMinimal
-
-    class Config:
-        from_attributes = True
-
-
-#  album output with relationships
 class AlbumWithRelations(AlbumOut):
+    """Schema for album output with relationships"""
     artist: Optional[ArtistMinimal] = None
     band: Optional[BandMinimal] = None
     uploaded_by: UserMinimal
-    album_songs: List[AlbumSongTrack] = []
 
 
-# Album with songs list
 class AlbumWithSongs(AlbumWithRelations):
+    """Schema for album with songs list"""
     total_songs: int
     total_duration: int  # in seconds
 
 
 # List schemas for pagination
 class AlbumList(BaseModel):
+    """Schema for paginated album list"""
     albums: List[AlbumOut]
     total: int
     page: int
@@ -123,6 +123,7 @@ class AlbumList(BaseModel):
 
 
 class AlbumListWithRelations(BaseModel):
+    """Schema for paginated album list with relationships"""
     albums: List[AlbumWithRelations]
     total: int
     page: int
@@ -132,6 +133,7 @@ class AlbumListWithRelations(BaseModel):
 
 # Search and filter schemas
 class AlbumFilter(BaseModel):
+    """Schema for album filtering"""
     title: Optional[str] = None
     album_artist_id: Optional[int] = None
     album_band_id: Optional[int] = None
@@ -141,6 +143,7 @@ class AlbumFilter(BaseModel):
 
 
 class AlbumSearch(BaseModel):
+    """Schema for album search"""
     query: str
     album_artist_id: Optional[int] = None
     album_band_id: Optional[int] = None
@@ -148,15 +151,10 @@ class AlbumSearch(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 
-# Album song management schemas
-class AlbumSongAdd(BaseModel):
-    song_id: int
-    track_number: Annotated[int, Field(gt=0)]
-
-
-class AlbumSongUpdate(BaseModel):
-    track_number: Annotated[int, Field(gt=0)]
-
-
-class AlbumSongRemove(BaseModel):
-    song_id: int 
+class AlbumStats(BaseModel):
+    """Schema for album statistics"""
+    total_albums: int
+    albums_by_artist: int
+    albums_by_band: int
+    most_uploaded_artist: Optional[str] = None
+    most_uploaded_band: Optional[str] = None 
