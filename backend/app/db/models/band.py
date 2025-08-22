@@ -1,6 +1,6 @@
 
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, Boolean,Index, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, Boolean, Index, UniqueConstraint, ForeignKey
 from app.db.base_class import Base
 from sqlalchemy.orm import relationship
 
@@ -19,6 +19,7 @@ class Band(Base):
     created_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     is_disabled = Column(Boolean, default=False, nullable=False)
     disabled_at = Column(DateTime, nullable=True)
+    created_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
 
     # Relationships
@@ -26,8 +27,8 @@ class Band(Base):
     songs = relationship("Song", back_populates="band", lazy="select")
     albums = relationship("Album", back_populates="band", lazy="select")
     artist_band_members = relationship("ArtistBandMember", back_populates="band", lazy="select")
-    followers = relationship("Following", back_populates="band", lazy="select")
     followers = relationship("Following", back_populates="band", lazy="select", cascade="all, delete-orphan")
+    created_by_user = relationship("User", foreign_keys=[created_by_user_id], lazy="select")
 
 
     # constraints and indexes

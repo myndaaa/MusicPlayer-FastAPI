@@ -3,10 +3,19 @@ from fastapi import FastAPI
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from core.exception import PasswordVerificationError, JWTExpiredError, JWTDecodeError
-from core.exception_handler import ( password_verification_exception_handler,validation_exception_handler,http_exception_handler,
-jwt_expired_exception_handler, jwt_decode_exception_handler, jwt_decode_exception_handler )
+from app.core.custom_exception import PasswordVerificationError, JWTExpiredError, JWTDecodeError
+from app.core.exception_handler import (
+    password_verification_exception_handler,
+    validation_exception_handler,
+    http_exception_handler,
+    jwt_expired_exception_handler,
+    jwt_decode_exception_handler
+)
 
+# Import database models to ensure they are loaded
+from app.db.base import *
+
+# Create FastAPI app with metadata
 app = FastAPI(
     title="Music Streaming API",
     description="Backend API for the Music Player App",
@@ -20,21 +29,97 @@ app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(JWTExpiredError, jwt_expired_exception_handler)
 app.add_exception_handler(JWTDecodeError, jwt_decode_exception_handler)
 
-# Routers Imports
-'''
-from app.api.v1 import user_router, song_router, etc...
-'''
-# Router inclusion and prefix declaration
-'''
-app.include_router(user.router, prefix="/api/v1/users")
-app.include_router(song.router, prefix="/api/v1/songs")
-'''
+# Import routers
+from app.api.v1.auth import router as auth_router
+from app.api.v1.user import router as user_router
+from app.api.v1.artist import router as artist_router
+from app.api.v1.band import router as band_router
+from app.api.v1.artist_band_member import router as artist_band_member_router
+
+# Include routers with proper prefixes and tags
+app.include_router(
+    auth_router, prefix="/auth", tags=["authentication"],
+    responses={401: {"description": "Unauthorized"}}
+)
+
+app.include_router(
+    user_router, tags=["users"], prefix="/user",
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden - Insufficient permissions"},
+        404: {"description": "User not found"}
+    }
+)
+
+app.include_router(
+    artist_router, tags=["artists"], prefix="/artist",
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden - Insufficient permissions"},
+        404: {"description": "Artist not found"},
+        409: {"description": "Conflict - Resource already exists"}
+    }
+)
+
+app.include_router(
+    band_router, tags=["bands"], prefix="/band",
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden - Insufficient permissions"},
+        404: {"description": "Band not found"},
+        409: {"description": "Conflict - Resource already exists"}
+    }
+)
+
+app.include_router(
+    artist_band_member_router, tags=["artist-band-members"], prefix="/artist-band-member",
+    responses={
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden - Insufficient permissions"},
+        404: {"description": "Membership not found"},
+        409: {"description": "Conflict - Resource already exists"}
+    }
+)
+
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=["*"],  
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# Health check endpoint -- I saw this on a median post
+@app.get("/health", tags=["health"])
+async def health_check():
+    """
+    Health check endpoint to verify API is running.
+    """
+    return {
+        "status": "healthy",
+        "version": "1.0.0",
+        "timestamp": "2024-01-01T00:00:00Z"
+    }
+
+# Root endpoint
+@app.get("/", tags=["root"])
+async def root():
+    """
+    Root endpoint with API information.
+    """
+    return {
+        "message": "Music Player API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "redoc": "/redoc",
+        "endpoints": {
+            "authentication": "/auth",
+            "users": "/user",
+            "artists": "/artist",
+            "bands": "/band",
+            "artist-band-members": "/artist-band-member",
+            "health": "/health"
+        }
+    }
 

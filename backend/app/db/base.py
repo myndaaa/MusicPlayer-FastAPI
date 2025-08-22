@@ -21,4 +21,4 @@ from app.db.models.subscription_plan import SubscriptionPlan #17
 from app.db.models.system_config import SystemConfig #18
 from app.db.models.user_subscription import UserSubscription #19
 from app.db.models.user import User #20
-
+from app.db.models.refresh_token import RefreshToken #21

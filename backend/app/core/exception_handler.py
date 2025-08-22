@@ -2,8 +2,8 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from core.exception import PasswordVerificationError
-from core.exception import JWTExpiredError, JWTDecodeError
+from app.core.custom_exception import PasswordVerificationError
+from app.core.custom_exception import JWTExpiredError, JWTDecodeError
 
 
 async def password_verification_exception_handler(request: Request, exc: PasswordVerificationError):
@@ -24,9 +24,20 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     """
     Handles FastAPIs validation errors globally (eg. when a request payload is malformed).
     """
+    # Convert errors to a serializable format
+    serializable_errors = []
+    for error in exc.errors():
+        serializable_error = {
+            "type": error["type"],
+            "loc": error["loc"],
+            "msg": str(error["msg"]),  # Convert to string to ensure serialization
+            "input": error.get("input")
+        }
+        serializable_errors.append(serializable_error)
+    
     return JSONResponse(
         status_code=422,
-        content={"error": "Validation failed", "details": exc.errors()},
+        content={"error": "Validation failed", "details": serializable_errors},
     )
 
 
