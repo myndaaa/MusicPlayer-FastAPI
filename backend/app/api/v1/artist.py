@@ -68,10 +68,10 @@ async def get_artists_public(
     db: Session = Depends(get_db),
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(20, ge=1, le=100, description="Maximum number of records to return"),
-    search: Optional[str] = Query(None, min_length=1, description="Search artists by stage name"),
     active_only: bool = Query(True, description="Return only active artists"),
     artist_id: Optional[int] = Query(None, description="Get specific artist by ID"),
-    stage_name: Optional[str] = Query(None, min_length=1, description="Get specific artist by stage name")
+    stage_name: Optional[str] = Query(None, min_length=1, description="Get specific artist by stage name"),
+    name: Optional[str] = Query(None, min_length=1, description="Search artists by stage name")
 ):
     """
     Get artists with flexible filtering options.
@@ -79,7 +79,7 @@ async def get_artists_public(
     Query Parameters:
     - skip: Number of records to skip (pagination)
     - limit: Maximum number of records to return (pagination)
-    - search: Search artists by stage name (returns multiple results)
+    - name: Search artists by stage name (returns multiple results)
     - active_only: Return only active artists (default: True)
     - artist_id: Get specific artist by ID (returns single result)
     - stage_name: Get specific artist by stage name (returns single result)
@@ -105,8 +105,8 @@ async def get_artists_public(
                 detail="Artist not found"
             )
         return [artist]  
-    if search:
-        artists = search_artists_by_name(db, search, skip=skip, limit=limit)
+    if name:
+        artists = search_artists_by_name(db, name, skip=skip, limit=limit) # partial search, stagename = exact match
     elif active_only:
         artists = get_all_active_artists(db, skip=skip, limit=limit)
     else:
