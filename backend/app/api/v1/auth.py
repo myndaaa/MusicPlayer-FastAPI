@@ -6,7 +6,7 @@ from app.db.models.user import User
 from app.schemas.user import UserLogin, UserOut
 from app.schemas.token import TokenResponse, TokenRefresh
 from app.services.auth import AuthService
-from app.api.v1.deps import get_current_active_user, get_current_admin, get_auth_service
+from app.core.deps import get_current_active_user, get_current_admin, get_auth_service
 
 router = APIRouter()
 
@@ -119,6 +119,9 @@ async def get_current_user_info(
     """
     return current_user
 
+'''
+
+TODO: use cron job -- refer to issues for assistance
 
 @router.post("/cleanup-expired")
 async def cleanup_expired_tokens(
@@ -136,3 +139,4 @@ async def cleanup_expired_tokens(
         "message": f"Cleaned up {cleaned_count} expired tokens",
         "tokens_removed": cleaned_count
     }
+'''
