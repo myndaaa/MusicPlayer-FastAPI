@@ -55,9 +55,6 @@ async def get_genre(genre_id: int, db: Session = Depends(get_db)):
     return genre
 
 
- 
-
-
 @router.post("/", response_model=GenreOut, status_code=status.HTTP_201_CREATED)
 async def create_new_genre(
     genre_data: GenreCreate,
@@ -148,7 +145,6 @@ async def enable_genre_endpoint(
     
     return {"message": "Genre enabled successfully"}
 
- 
 
 @router.get("/statistics", response_model=GenreStats)
 async def get_genre_statistics_endpoint(
@@ -158,3 +154,4 @@ async def get_genre_statistics_endpoint(
     """Get genre statistics"""
     stats = get_genre_statistics(db)
     return GenreStats(**stats) 
+
