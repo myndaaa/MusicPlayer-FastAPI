@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Index, UniqueConstraint
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Index, UniqueConstraint, Boolean
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
@@ -16,6 +16,11 @@ class Playlist(Base):
     name = Column(String(100), nullable=False)
     description = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    
+    # Sharing and Collaboration
+    share_token = Column(String(64), unique=True, nullable=True)
+    allow_collaboration = Column(Boolean, default=False, nullable=False)
+    
 
     # Relationships
     owner = relationship("User", back_populates="playlists", lazy="select")

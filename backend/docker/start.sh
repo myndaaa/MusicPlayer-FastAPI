@@ -5,12 +5,11 @@ echo "🎵Music Player Backend Starting..."
 echo "🎵========================================"
 
 echo ""
-echo "📦 Installing Python dependencies..."
-poetry install --no-dev --no-interaction --no-ansi
+echo "📦 Dependencies already installed in Docker build..."
 
 echo ""
 echo "Waiting for PostgreSQL database to be ready..."
-until poetry run python -c "
+until python -c "
 import psycopg2
 import os
 try:
@@ -34,7 +33,7 @@ done
 
 echo ""
 echo "Running Alembic database migrations..."
-poetry run alembic upgrade head
+alembic upgrade head
 
 echo ""
 echo "Database migrations completed successfully!"
@@ -50,4 +49,4 @@ echo "========================================"
 echo "Music Player Backend is ready!"
 echo "========================================"
 
-poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload 
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload 

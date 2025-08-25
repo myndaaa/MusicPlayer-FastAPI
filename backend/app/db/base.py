@@ -18,7 +18,7 @@ from app.db.models.playlist_song import PlaylistSong #14
 from app.db.models.playlist import Playlist #15
 from app.db.models.song import Song #16
 from app.db.models.subscription_plan import SubscriptionPlan #17
-from app.db.models.system_config import SystemConfig #18
+from app.db.models.user import User #18
 from app.db.models.user_subscription import UserSubscription #19
-from app.db.models.user import User #20
+from app.db.models.system_config import SystemConfig #20
 from app.db.models.refresh_token import RefreshToken #21

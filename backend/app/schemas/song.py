@@ -3,8 +3,8 @@ from datetime import datetime
 from pydantic import BaseModel, StringConstraints, Field, model_validator
 
 
-# Base schema for song
 class SongBase(BaseModel):
+    """Base schema for song data with common fields"""
     title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=150)]
     genre_id: int
     band_id: Optional[int] = None
@@ -29,27 +29,44 @@ class SongBase(BaseModel):
         from_attributes = True
 
 
-class SongCreate(SongBase):
-    uploaded_by_user_id: int
+class SongUploadByArtist(SongBase):
+    """Schema for artist uploading their own song"""
+    pass
+
+
+class SongUploadByBand(SongBase):
+    """Schema for band member uploading band song"""
+    pass
+
+
+class SongUploadByAdmin(SongBase):
+    """Schema for admin uploading for any artist/band (including dead artists)"""
+    artist_name: Optional[Annotated[str, StringConstraints(max_length=100)]] = None
+    band_name: Optional[Annotated[str, StringConstraints(max_length=100)]] = None
+
+    @model_validator(mode="after")
+    def validate_admin_upload(self) -> "SongUploadByAdmin":
+        """For admin uploads, either artist_name or band_name must be provided if no IDs"""
+        if self.artist_id is None and self.band_id is None:
+            if not self.artist_name and not self.band_name:
+                raise ValueError("Admin upload must specify either artist_name or band_name when no IDs provided")
+        return self
 
 
 class SongUpdate(BaseModel):
+    """Schema for updating song metadata"""
     title: Optional[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=150)]] = None
     genre_id: Optional[int] = None
-    band_id: Optional[int] = None
-    artist_id: Optional[int] = None
     release_date: Optional[datetime] = None
     song_duration: Optional[Annotated[int, Field(gt=0)]] = None
-    file_path: Optional[Annotated[str, StringConstraints(strip_whitespace=True, max_length=255)]] = None
     cover_image: Optional[Annotated[str, StringConstraints(max_length=255)]] = None
-    artist_name: Optional[Annotated[str, StringConstraints(max_length=100)]] = None
-    band_name: Optional[Annotated[str, StringConstraints(max_length=100)]] = None
 
     class Config:
         from_attributes = True
 
 
 class SongOut(SongBase):
+    """Schema for song output with all fields"""
     id: int
     uploaded_by_user_id: int
     created_at: datetime
@@ -60,8 +77,19 @@ class SongOut(SongBase):
         from_attributes = True
 
 
-# Schema for relationships
+class SongWithRelations(SongOut):
+    """Schema for song output with relationships"""
+    genre: "GenreMinimal"
+    artist: Optional["ArtistMinimal"] = None
+    band: Optional["BandMinimal"] = None
+    uploaded_by: "UserMinimal"
+
+    class Config:
+        from_attributes = True
+
+
 class GenreMinimal(BaseModel):
+    """Minimal genre schema for relationships"""
     id: int
     name: str
 
@@ -70,6 +98,7 @@ class GenreMinimal(BaseModel):
 
 
 class ArtistMinimal(BaseModel):
+    """Minimal artist schema for relationships"""
     id: int
     artist_stage_name: str
     artist_profile_image: Optional[str] = None
@@ -79,6 +108,7 @@ class ArtistMinimal(BaseModel):
 
 
 class BandMinimal(BaseModel):
+    """Minimal band schema for relationships"""
     id: int
     name: str
     profile_picture: Optional[str] = None
@@ -88,6 +118,7 @@ class BandMinimal(BaseModel):
 
 
 class UserMinimal(BaseModel):
+    """Minimal user schema for relationships"""
     id: int
     username: str
     first_name: str
@@ -97,18 +128,15 @@ class UserMinimal(BaseModel):
         from_attributes = True
 
 
-# song output with relationships
-class SongWithRelations(SongOut):
-    genre: GenreMinimal
-    artist: Optional[ArtistMinimal] = None
-    band: Optional[BandMinimal] = None
-    uploaded_by: UserMinimal
-
-
-# Song status update
-class SongStatus(BaseModel):
-    is_disabled: bool
-    disabled_at: Optional[datetime] = None
+class SongStats(BaseModel):
+    """Schema for song statistics"""
+    total_songs: int
+    active_songs: int
+    disabled_songs: int
+    songs_by_artist: int
+    songs_by_band: int
+    most_uploaded_artist: Optional[str] = None
+    most_uploaded_band: Optional[str] = None
 
     class Config:
         from_attributes = True
