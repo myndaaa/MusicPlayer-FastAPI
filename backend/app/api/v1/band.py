@@ -9,7 +9,7 @@ from app.schemas.band import (
     BandCreate, BandOut, BandUpdate, BandStats, BandWithRelations
 )
 from app.crud.band import (
-    create_band, get_band_by_id, get_band_by_name, get_all_bands,
+    create_band, get_band_by_id, get_all_bands,
     get_active_bands, search_bands_by_name, update_band,
     disable_band, enable_band, delete_band_permanently, get_band_statistics
 )
@@ -18,6 +18,8 @@ from app.core.deps import (
 )
 
 router = APIRouter()
+# TODO: add slug later on; 
+# resource: https://stackoverflow.com/questions/10018100/identify-item-by-either-an-id-or-a-slug-in-a-restful-api
 """
 AUTHENTICATION LEVELS:
 - None: Public endpoint, no authentication required
@@ -61,7 +63,7 @@ async def get_bands_public(
     db: Session = Depends(get_db),
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(20, ge=1, le=100, description="Maximum number of records to return"),
-    search: Optional[str] = Query(None, min_length=1, description="Search bands by name"),
+    name: Optional[str] = Query(None, min_length=1, description="Filter bands by name (case-insensitive, partial)"),
     active_only: bool = Query(True, description="Return only active bands")
 ):
     """
@@ -70,13 +72,13 @@ async def get_bands_public(
     Query Parameters:
     - skip: Number of records to skip (pagination)
     - limit: Maximum number of records to return (pagination)
-    - search: Search bands by name
+    - name: Filter bands by name (case-insensitive, partial)
     - active_only: Return only active bands (default: True)
     
     Returns: 200 OK - List of bands
     """
-    if search:
-        bands = search_bands_by_name(db, search, skip=skip, limit=limit)
+    if name:
+        bands = search_bands_by_name(db, name, skip=skip, limit=limit)
     elif active_only:
         bands = get_active_bands(db, skip=skip, limit=limit)
     else:
@@ -105,28 +107,8 @@ async def get_band_public(
         )
     
     return band
-
-
-@router.get("/name/{name}", response_model=BandOut)
-async def get_band_by_name_public(
-    name: str,
-    db: Session = Depends(get_db)
-):
-    """
-    Get public band profile by name.
-    Returns basic band information for public viewing.
-    Only active bands are returned.
-    Returns: 200 OK - Band profile found
-    Returns: 404 Not Found - Band not found or inactive
-    """
-    band = get_band_by_name(db, name)
-    if not band or band.is_disabled:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Band not found"
-        )
-    
-    return band
+# removed {name} function as it can be fetched alrdy via query param in get_bands_public
+ 
 
 
 @router.get("/me/bands", response_model=List[BandOut])

@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime, timezone
@@ -8,6 +8,7 @@ from app.db.models.band import Band
 from app.db.models.genre import Genre
 from app.db.models.user import User
 from app.schemas.song import SongUploadByArtist, SongUploadByBand, SongUploadByAdmin, SongUpdate
+import difflib
 
 
 def create_song_by_artist(db: Session, song_data: SongUploadByArtist, uploaded_by_user_id: int) -> Song:
@@ -116,6 +117,40 @@ def search_songs(db: Session, query: str, skip: int = 0, limit: int = 20) -> Lis
             Song.band_name.ilike(f"%{query}%")
         )
     ).offset(skip).limit(limit).all()
+
+
+def search_songs_fuzzy(
+    db: Session,
+    query: str,
+    skip: int = 0,
+    limit: int = 20,
+    min_ratio: float = 0.6,
+) -> List[Song]:
+    """Fuzzy search songs by comparing query with title/artist_name/bandname
+    """
+    active_songs: List[Song] = db.query(Song).filter(Song.is_disabled == False).all()
+
+    scored: List[Tuple[float, Song]] = []
+    q = query.lower()
+    for song in active_songs:
+        candidates = [
+            (song.title or ""),
+            (song.artist_name or ""),
+            (song.band_name or ""),
+        ]
+        best = 0.0
+        for text in candidates:
+            if not text:
+                continue
+            r = difflib.SequenceMatcher(None, q, text.lower()).ratio()
+            if r > best:
+                best = r
+        if best >= min_ratio:
+            scored.append((best, song))
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    sliced = scored[skip: skip + limit] if limit is not None else scored[skip:]
+    return [s for _, s in sliced]
 
 
 def get_songs_by_artist(db: Session, artist_id: int, skip: int = 0, limit: int = 20) -> List[Song]:

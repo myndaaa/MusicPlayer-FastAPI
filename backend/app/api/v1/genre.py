@@ -12,7 +12,8 @@ from app.crud.genre import (
 )
 
 router = APIRouter()
-
+# TODO: add slug later on;
+# https://stackoverflow.com/questions/10018100/identify-item-by-either-an-id-or-a-slug-in-a-restful-api
 
 @router.get("/", response_model=List[GenreOut])
 async def list_genres(

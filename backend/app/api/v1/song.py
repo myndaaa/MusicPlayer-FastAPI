@@ -9,10 +9,10 @@ from app.schemas.song import (
 )
 from app.crud.song import (
     create_song_by_artist, create_song_by_band, create_song_by_admin,
-    get_song_by_id, get_all_songs_paginated, search_songs,
-    get_songs_by_artist, get_songs_by_band, get_songs_by_genre,
+    get_song_by_id, get_all_songs_paginated, search_songs, search_songs_fuzzy,
+    get_songs_by_artist, get_songs_by_band, get_songs_by_genre, song_exists,
     update_song_file_path, update_song_metadata, disable_song, enable_song,
-    song_exists, can_user_upload_for_band, get_song_statistics
+    can_user_upload_for_band, get_song_statistics
 )
 from app.crud.user import get_user_by_id
 from app.db.models.user import User
@@ -24,21 +24,16 @@ router = APIRouter()
 async def get_all_songs(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
     limit: int = Query(20, ge=1, le=100, description="Maximum number of records to return"),
+    q: Optional[str] = Query(None, min_length=1, description="Search by title/artist/band"),
     db: Session = Depends(get_db)
 ):
-    """Get all active songs with pagination - public access"""
+    """List songs: when query param is provided, performs search; otherwise paginated list."""
+    if q:
+        results = search_songs(db, q, skip=skip, limit=limit)
+        if results:
+            return results
+        return search_songs_fuzzy(db, q, skip=skip, limit=limit)
     return get_all_songs_paginated(db, skip=skip, limit=limit)
-
-
-@router.get("/search", response_model=List[SongOut])
-async def search_songs_endpoint(
-    query: str = Query(..., min_length=1, description="Search query"),
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(20, ge=1, le=100, description="Maximum number of records to return"),
-    db: Session = Depends(get_db)
-):
-    """Search songs by title, artist name, or band name - public access"""
-    return search_songs(db, query, skip=skip, limit=limit)
 
 
 @router.get("/{song_id}", response_model=SongOut)
